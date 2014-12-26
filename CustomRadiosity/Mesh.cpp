@@ -1,12 +1,19 @@
 #include "Mesh.h"
+
+
+
+#include <glm/gtc/matrix_transform.hpp>
+
+
 #include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <glm/gtc/matrix_transform.hpp>
 
 
-using namespace std;
+
+const string Mesh::vertexShaderFile = "shaders/MeshVertexShader.vert";
+const string Mesh::fragmentShaderFile = "shaders/MeshFragmentShader.frag";
 
 Mesh::Mesh()
 {
@@ -133,7 +140,7 @@ vector<Vertex*> Mesh::getVertices() const { return vertices; }
 vector<HalfEdge*> Mesh::getHalfEdges() const { return halfEdges; }
 vector<Face*> Mesh::getFaces() const { return faces; }
 
-void Mesh::LoadToArrays(string input_file, vector<glm::vec4>& file_vertices, vector<glm::vec3>& file_normals, vector<GLushort>& file_elements)
+void Mesh::LoadToArrays(string input_file)
 {
 	ifstream fileStream(input_file, ios::in);
 
@@ -193,7 +200,7 @@ void Mesh::LoadToArrays(string input_file, vector<glm::vec4>& file_vertices, vec
 	}
 }
 
-void Mesh::LoadFromArrays(vector<glm::vec4>& file_vertices, vector<glm::vec3>& file_normals, vector<GLushort>& file_elements)
+void Mesh::LoadFromArrays()
 {
 	//to create a mesh:
 	//first add the 3 vertices for a face
@@ -222,6 +229,12 @@ void Mesh::LoadFromArrays(vector<glm::vec4>& file_vertices, vector<glm::vec3>& f
 
 		addFace(a, b, c, faceColor, faceEmission);
 	}
+}
+
+void Mesh::Load(string input_file)
+{
+	LoadToArrays(input_file);
+	LoadFromArrays();
 }
 
 void Mesh::Subdivide()
@@ -347,7 +360,67 @@ void Mesh::Draw()
 
 }
 
+GLuint Mesh::LoadShaders()
+{
+	shaderProgramID = shaderLoader.LoadShaders(vertexShaderFile, fragmentShaderFile);
+	return shaderProgramID;
+}
+
+void Mesh::PrepareToDraw()
+{
+	//create a vertex buffer
+	glGenBuffers(1, &vertexBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+
+	//fill the vertex buffer with our mesh's data
+	glBufferData(GL_ARRAY_BUFFER, file_vertices.size(), file_vertices.data(), GL_STATIC_DRAW);
+}
+
+void Mesh::Cleanup()
+{
+	glDeleteBuffers(1, &vertexBufferID);
+	glDeleteProgram(shaderProgramID);
+}
+
 void Mesh::DrawWireframe()
 {
+	// Use our shader
+	glUseProgram(shaderProgramID);
+
+	// Get a handle for our buffers
+	//this will be our "vertex location" attribute
+
+	// Get a handle to the vertexPosition_modelspace parameter from the shader
+	GLuint vertexPosition_modelspaceID = glGetAttribLocation(shaderProgramID, "vertexPosition_modelspace");
+
+	// Get a handle for our "MVP" uniform from the shader
+	GLuint MVP_MatrixID = glGetUniformLocation(shaderProgramID, "MVP");
+
+	// Send our ModelViewProjectionMatrix to the currently bound shader, in the "MVP" parameter
+	glUniformMatrix4fv(MVP_MatrixID, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+
+	// 1rst attribute buffer will be the "vertex location" we got from the shader
+	glEnableVertexAttribArray(vertexPosition_modelspaceID);
+
+	//use the vertex buffer
+	//this is the data we'll give as input to OpanGL
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+
+	//describe the data's attributes to OpenGL
+	//(all it sees is a bunch of numbers - that could be anything)
+	glVertexAttribPointer(
+			vertexPosition_modelspaceID, // The attribute we want to configure
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			0            // array buffer offset
+		);
+
+	//draw the data we gave as a triangle
+	glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
+
+	//remove the attribute
+	glDisableVertexAttribArray(vertexPosition_modelspaceID);
 
 }

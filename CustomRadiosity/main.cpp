@@ -21,22 +21,6 @@ using namespace std;
 
 int main( void )
 {
-
-	Mesh* mesh = new Mesh();
-	
-	vector<vec4> file_vertices;
-	vector<vec3> file_normals;
-	vector<GLushort> file_elements;
-	
-	mesh->LoadToArrays("cube.obj", file_vertices, file_normals, file_elements);
-	mesh->LoadFromArrays(file_vertices, file_normals, file_elements);
-
-
-
-	//mesh->Subdivide();
-	//mesh->Subdivide();
-	
-
 	// Initialise GLFW
 	if( !glfwInit() )
 	{
@@ -48,9 +32,9 @@ int main( void )
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
-
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768, "Radiosity", NULL, NULL);
+	window = glfwCreateWindow( 1024, 768, "Tutorial 01", NULL, NULL);
+
 	if( window == NULL )
 	{
 		fprintf( stderr, "Failed to open GLFW window.\n" );
@@ -71,29 +55,72 @@ int main( void )
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
 	// Dark blue background
-	glClearColor(1.0f, 1.0f, 0.5f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
-	glm::mat4 view = glm::lookAt(
-				glm::vec3(1.0,  3.0, 4.0),   // eye
-				glm::vec3(0.0,  0.0, 0.0),   // direction
-				glm::vec3(0.0,  1.0, 0.0));  // up
 
-		glm::mat4 projection = glm::perspective(45.0f, 1.0f*500/500, 0.1f, 100.0f);
+	Mesh* mesh = new Mesh();
 
+	mesh->Load("cube.obj");
+
+	//mesh->Subdivide();
+	//mesh->Subdivide();
+
+	// Create and compile our GLSL program from the mesh's shaders
+	GLuint meshShaderProgramID = mesh->LoadShaders();
+
+	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+	glm::mat4 Projection = glm::perspective(
+								90.0f,
+								4.0f / 3.0f,
+								0.1f,
+								100.0f
+							);
+	// Or, for an ortho camera :
+	//glm::mat4 Projection = glm::ortho(-10.0f,10.0f,-10.0f,10.0f,0.0f,100.0f); // In world coordinates
+
+	// Camera matrix
+	glm::mat4 View = glm::lookAt(
+						glm::vec3(0,4,4), // Camera is at (4,3,3), in World Space
+						glm::vec3(0,0,0), // and looks at the origin
+						glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+					);
+	
+	// Model matrix : an identity matrix (model will be at the origin)
+	glm::mat4 Model = glm::mat4(1.0f); // Changes for each model !
+
+	// Our ModelViewProjection : multiplication of our 3 matrices
+	glm::mat4 MVP = Projection * View * Model; // Remember, matrix multiplication is the other way around
+
+	mesh->SetMVP(MVP);
+	mesh->PrepareToDraw();
+
+	//now we draw
 	do
 	{
-		// Draw nothing, see you in tutorial 2 !
+		// Clear the screen
+		glClear( GL_COLOR_BUFFER_BIT );
 
-		mesh->Draw();
+		//draw the mesh
+		mesh->DrawWireframe();
 
 		// Swap buffers
 		glfwSwapBuffers(window);
+
 		glfwPollEvents();
+
+		GLenum err;
+		while ((err = glGetError()) != GL_NO_ERROR)
+		{
+			printf("OpenGL error: %d\n",  err);
+		}
 	} // Check if the ESC key was pressed or the window was closed
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
 
+	// Cleanup mesh VBO
+	mesh->Cleanup();
+
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
-	
+
 	return 0;
 }

@@ -86,6 +86,7 @@
     <ClCompile Include="HalfEdge.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="ShaderLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BoundingBox.h" />
@@ -93,6 +94,7 @@
     <ClInclude Include="functions.h" />
     <ClInclude Include="HalfEdge.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="ShaderLoader.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

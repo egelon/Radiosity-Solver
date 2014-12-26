@@ -5,30 +5,32 @@
 #include "HalfEdge.h"
 #include "Face.h"
 #include "BoundingBox.h"
+#include "ShaderLoader.h"
+
+#include <GL/glew.h>
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/glm.hpp>
-#include <vector>
+
 #include <string>
-
-// Include GLEW
-#include <GL/glew.h>
-#include <glfw/glfw3.h>
-
+#include <vector>
 using namespace std;
+
 
 class Mesh 
 {
-	public:
+public:
 	Mesh();
 	virtual ~Mesh();
 
-	void LoadToArrays(string input_file, vector<glm::vec4>& file_vertices, vector<glm::vec3>& file_normals, vector<GLushort>& file_elements);
-	void LoadFromArrays(vector<glm::vec4>& file_vertices, vector<glm::vec3>& file_normals, vector<GLushort>& file_elements);
+	
+	void Load(string input_file);
 
 	void Subdivide();
+	void PrepareToDraw();
 	void DrawWireframe();
+	void Cleanup();
 	void Draw();
 
 	int numVertices() const;
@@ -42,7 +44,14 @@ class Mesh
 	vector<HalfEdge*> getHalfEdges() const;
 	vector<Face*> getFaces() const;
 
-	private:
+	GLuint LoadShaders();
+
+	void SetMVP(glm::mat4 mvp){ModelViewProjectionMatrix = mvp;}
+
+private:
+	void LoadToArrays(string input_file);
+	void LoadFromArrays();
+
 	void addFace(Vertex *a, Vertex *b, Vertex *c, const glm::vec3& col, const glm::vec3& emit);
 	void removeFace(Face *f);
 	
@@ -52,6 +61,22 @@ class Mesh
 	vector<HalfEdge*> halfEdges;
 	vector<Face*> faces;
 	BoundingBox* bbox;
+
+	static const string vertexShaderFile;
+	static const string fragmentShaderFile;
+
+	ShaderLoader shaderLoader;
+
+	//OpenGL IDs
+	GLuint vertexBufferID;
+	GLuint shaderProgramID;
+
+public:
+	vector<glm::vec4> file_vertices;
+	vector<glm::vec3> file_normals;
+	vector<GLushort> file_elements;
+
+	glm::mat4 ModelViewProjectionMatrix;
 };
 
 #endif
