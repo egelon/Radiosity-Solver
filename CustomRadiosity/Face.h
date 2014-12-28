@@ -13,6 +13,8 @@ class Face
 {
 	public:
 	Face(const glm::vec3& c, const glm::vec3& e);
+	Face(const Face&);
+	Face* Clone() const;
 	~Face();
 
 	Vertex* operator[](int i) const;

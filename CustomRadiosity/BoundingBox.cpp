@@ -8,10 +8,16 @@ BoundingBox::BoundingBox(glm::vec3 _min, glm::vec3 _max)
 {
 	Set(_min,_max);
 }
-BoundingBox::BoundingBox(BoundingBox& otherBB)
+BoundingBox::BoundingBox(const BoundingBox& otherBB)
 {
 	Set(otherBB.getMin(), otherBB.getMax());
 }
+
+BoundingBox* BoundingBox::Clone() const
+{
+	return new BoundingBox(*this);
+}
+
 BoundingBox::~BoundingBox() {}
 
 glm::vec3 BoundingBox::getMin() const { return min; }

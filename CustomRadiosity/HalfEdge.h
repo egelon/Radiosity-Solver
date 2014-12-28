@@ -12,6 +12,8 @@ struct HalfEdge
 {
 	public:
 	HalfEdge(Vertex* v, Face* f);
+	HalfEdge(const HalfEdge&);
+	HalfEdge* Clone() const;
 	~HalfEdge();
 
 	Vertex* getVertex() const;
@@ -29,7 +31,6 @@ struct HalfEdge
 
 
 	private:
-	HalfEdge(const HalfEdge&) {assert(0);}
 	HalfEdge& operator=(const HalfEdge&) {assert(0);}
 
 	Vertex *vertex;

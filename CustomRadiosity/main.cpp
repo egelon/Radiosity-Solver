@@ -71,7 +71,7 @@ int main( void )
 	mesh->Load("cube.obj");
 
 	mesh->Subdivide();
-	//mesh->Subdivide();
+	mesh->Subdivide();
 	//mesh->Subdivide();
 
 	// Create and compile our GLSL program from the mesh's shaders

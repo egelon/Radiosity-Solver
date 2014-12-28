@@ -7,7 +7,10 @@ class BoundingBox
 {
 	public:
 	BoundingBox(glm::vec3 _min, glm::vec3 _max);
-	BoundingBox(BoundingBox& otherBB);
+	BoundingBox(const BoundingBox& otherBB);
+
+	BoundingBox* Clone() const;
+
 	~BoundingBox();
 
 	glm::vec3 getMin() const;

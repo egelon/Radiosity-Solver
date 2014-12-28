@@ -86,12 +86,21 @@ void Mesh::addFace(Vertex *a, Vertex *b, Vertex *c, const glm::vec3& col, const 
 	HalfEdge* ec_opposite = getEdge(ec->getEndVertex(), ec->getVertex());
 
 	//connect each half edge to it's opposite
-	if (ea_opposite != NULL)
+	if (ea_opposite != NULL && ea_opposite != ea)
+	{
+		ea_opposite->clearOpposite();
 		ea_opposite->setOpposite(ea);
-	if (eb_opposite != NULL)
+	}
+	if (eb_opposite != NULL && eb_opposite != eb)
+	{
+		eb_opposite->clearOpposite();
 		eb_opposite->setOpposite(eb);
-	if (ec_opposite != NULL)
+	}
+	if (ec_opposite != NULL && ec_opposite != ec)
+	{
+		ec_opposite->clearOpposite();
 		ec_opposite->setOpposite(ec);
+	}
 
 	//add the face to the face array
 	faces.push_back(newFace);
@@ -286,7 +295,12 @@ void Mesh::Subdivide()
 //WORKING!!!
 void Mesh::Subdivide()
 {
-	vector<Face*> startingFaces = faces;
+	vector<Face*> startingFaces;
+	startingFaces.resize(faces.size());
+	for(int i=0; i<faces.size(); i++)
+	{
+		startingFaces[i] = faces[i]->Clone();
+	}
 	int numStartingFaces = startingFaces.size();
 
 	for(int i=0; i<numStartingFaces; i++)
@@ -294,7 +308,7 @@ void Mesh::Subdivide()
 		//for every face, get the 3 vertices, add a new vertex at their centroid, then delete the old face and add the 3 new ones
 
 		//first get the centroid
-		glm::vec3 centroid = faces[i]->getCentroid();
+		glm::vec3 centroid = startingFaces[i]->getCentroid();
 
 		//make a new vertex with that position
 		Vertex* center = new Vertex(numVertices(), centroid);
@@ -303,13 +317,13 @@ void Mesh::Subdivide()
 		vertices.push_back(center);
 
 		//then get the current face's 3 other vertices
-		Vertex* a = (*faces[i])[0];
-		Vertex* b = (*faces[i])[1];
-		Vertex* c = (*faces[i])[2];
+		Vertex* a = getVertexByIndex((*startingFaces[i])[0]->getIndex());
+		Vertex* b = getVertexByIndex((*startingFaces[i])[1]->getIndex());
+		Vertex* c = getVertexByIndex((*startingFaces[i])[2]->getIndex());
 
 		//and the color and emission
-		glm::vec3 color = faces[i]->getColor();
-		glm::vec3 emission = faces[i]->getEmission();
+		glm::vec3 color = startingFaces[i]->getColor();
+		glm::vec3 emission = startingFaces[i]->getEmission();
 		
 		removeFace(faces[i]);
 

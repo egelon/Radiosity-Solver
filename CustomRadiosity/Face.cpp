@@ -32,6 +32,21 @@ Face::Face(const glm::vec3 &c, const glm::vec3 &e)
 	emission = e; 
 }
 
+Face::Face(const Face& f)
+{
+	edge = f.getEdge();
+	emission = f.getEmission();
+	color = f.getColor();
+}
+
+Face* Face::Clone() const
+{
+
+	Face* clone = new Face(*this);
+	clone->edge = edge->Clone();
+	return clone;
+}
+
 Face::~Face() {}
 
 Vertex* Face::operator[](int i) const 

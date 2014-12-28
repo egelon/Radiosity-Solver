@@ -12,6 +12,13 @@ class Vertex
 		position = pos;
 		index = i;
 	}
+	Vertex(const Vertex& v)
+	{
+		position = v.getPosition();
+		index = v.getIndex();
+	}
+
+	Vertex* Clone() const { return new Vertex(*this); }
 
 	virtual ~Vertex() { }
 
@@ -35,7 +42,7 @@ class Vertex
 	private:
 	Vertex() { assert(0); }
 	Vertex& operator=(const Vertex&) { assert(0); }
-	Vertex(const Vertex&) { assert(0); }
+	
 
 	int index;
 	glm::vec3 position;

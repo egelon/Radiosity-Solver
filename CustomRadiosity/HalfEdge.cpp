@@ -8,6 +8,32 @@ HalfEdge::HalfEdge(Vertex* v, Face* f)
 	opposite = NULL;
 }
 
+HalfEdge::HalfEdge(const HalfEdge& h)
+{
+	vertex = h.getVertex();
+	face = h.getFace();
+	next = h.getNext();
+	opposite = h.getOpposite();
+}
+
+HalfEdge* HalfEdge::Clone() const
+{
+	//clone->face = face->Clone();
+	//clone->next = next->Clone();
+	//clone->opposite = opposite->Clone();
+
+	HalfEdge* clone = new HalfEdge(*this);
+	clone->vertex = vertex->Clone();
+	clone->next = new HalfEdge(*next);
+	clone->next->next = new HalfEdge(*next->next);
+	//if(clone->opposite)
+	//	clone->opposite = new HalfEdge(*opposite);
+	//if(clone->opposite->next)
+	//	clone->opposite->next = new HalfEdge(*opposite->next);
+
+	return clone;
+}
+
 HalfEdge::~HalfEdge()
 {
 	if (opposite != NULL)
