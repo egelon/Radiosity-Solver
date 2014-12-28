@@ -46,7 +46,19 @@ public:
 
 	GLuint LoadShaders();
 
-	void SetMVP(glm::mat4 mvp){ModelViewProjectionMatrix = mvp;}
+	void SetMVP(glm::mat4 mvp){ ModelViewProjectionMatrix = mvp; }
+
+
+	vector<GLfloat> GLF_getVertexPositions() { return vertex_positions; };
+	vector<GLfloat> GLF_getVertexColors() { return vertex_colors; };
+	vector<GLuint> GLUI_getFaceIndexes() { return face_indexes; };
+	vector<GLfloat> GLF_getFaceNormals() { return face_normals; };
+
+	void cacheVertexPositions();
+	void cacheVertexColors();
+	void cacheFaceIndexes();
+	void cacheFaceNormals();
+
 
 private:
 	void LoadToArrays(string input_file);
@@ -62,6 +74,18 @@ private:
 	vector<Face*> faces;
 	BoundingBox* bbox;
 
+	vector<GLfloat> vertex_positions;
+	vector<GLfloat> vertex_colors;
+	vector<GLuint> face_indexes;
+	vector<GLfloat> face_normals;
+
+	vector<glm::vec3> file_vertices;
+	vector<glm::vec3> file_colors;
+	vector<glm::vec3> file_normals;
+	vector<GLuint> file_elements;
+
+	glm::mat4 ModelViewProjectionMatrix;
+
 	static const string vertexShaderFile;
 	static const string fragmentShaderFile;
 
@@ -69,14 +93,9 @@ private:
 
 	//OpenGL IDs
 	GLuint vertexBufferID;
+	GLuint colorBufferID;
+	GLuint elementBufferID;
 	GLuint shaderProgramID;
-
-public:
-	vector<glm::vec4> file_vertices;
-	vector<glm::vec3> file_normals;
-	vector<GLushort> file_elements;
-
-	glm::mat4 ModelViewProjectionMatrix;
 };
 
 #endif

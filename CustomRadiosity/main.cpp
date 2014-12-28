@@ -33,7 +33,7 @@ int main( void )
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768, "Tutorial 01", NULL, NULL);
+	window = glfwCreateWindow( 1024, 768, "Radiosity", NULL, NULL);
 
 	if( window == NULL )
 	{
@@ -57,11 +57,20 @@ int main( void )
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS);
+
+	// Cull triangles which normal is not towards the camera
+	glEnable(GL_CULL_FACE);
 
 	Mesh* mesh = new Mesh();
 
 	mesh->Load("cube.obj");
 
+	mesh->Subdivide();
 	//mesh->Subdivide();
 	//mesh->Subdivide();
 
@@ -70,7 +79,7 @@ int main( void )
 
 	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	glm::mat4 Projection = glm::perspective(
-								90.0f,
+								45.0f,
 								4.0f / 3.0f,
 								0.1f,
 								100.0f
@@ -80,7 +89,7 @@ int main( void )
 
 	// Camera matrix
 	glm::mat4 View = glm::lookAt(
-						glm::vec3(0,4,4), // Camera is at (4,3,3), in World Space
+						glm::vec3(4,3,-3), // Camera is at (4,3,3), in World Space
 						glm::vec3(0,0,0), // and looks at the origin
 						glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
 					);
@@ -98,10 +107,10 @@ int main( void )
 	do
 	{
 		// Clear the screen
-		glClear( GL_COLOR_BUFFER_BIT );
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//draw the mesh
-		mesh->DrawWireframe();
+		mesh->Draw();
 
 		// Swap buffers
 		glfwSwapBuffers(window);

@@ -161,7 +161,7 @@ void Mesh::LoadToArrays(string input_file)
 			float x,y,z;
 
 			str >> x >> y >> z;
-			glm::vec4 vertex(x, y, z, 1.0);
+			glm::vec3 vertex(x, y, z);
 
 			file_vertices.push_back(vertex);
 		}
@@ -198,6 +198,14 @@ void Mesh::LoadToArrays(string input_file)
 		file_normals[ib] = normal;
 		file_normals[ic] = normal;
 	}
+
+	for(int i=0; i<file_vertices.size(); i++)
+	{
+		float r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0f));
+		float g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0f));
+		float b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0f));
+		file_colors.push_back(glm::vec3(r, g, b));
+	}
 }
 
 void Mesh::LoadFromArrays()
@@ -209,16 +217,15 @@ void Mesh::LoadFromArrays()
 	//load all vertices
 	for(int i=0; i<file_vertices.size(); i++)
 	{
-		glm::vec3 vertexPosition(file_vertices[i].x, file_vertices[i].y, file_vertices[i].z);
-		addVertex(vertexPosition);
+		addVertex(file_vertices[i]);
 	}
 
 	//for each face, get it's 3 vertices and add the face to the mesh
 	for(int i=0; i<file_elements.size(); i+=3)
 	{
-		GLushort index_a = file_elements[i];
-		GLushort index_b = file_elements[i+1];
-		GLushort index_c = file_elements[i+2];
+		GLuint index_a = file_elements[i];
+		GLuint index_b = file_elements[i+1];
+		GLuint index_c = file_elements[i+2];
 
 		Vertex* a = getVertexByIndex(index_a);
 		Vertex* b = getVertexByIndex(index_b);
@@ -227,7 +234,7 @@ void Mesh::LoadFromArrays()
 		glm::vec3 faceColor(1.0, 1.0, 1.0);
 		glm::vec3 faceEmission(0.0, 0.0, 0.0);
 
-		addFace(a, b, c, faceColor, faceEmission);
+		addFace(a, b, c, file_colors[index_a], faceEmission);
 	}
 }
 
@@ -236,7 +243,7 @@ void Mesh::Load(string input_file)
 	LoadToArrays(input_file);
 	LoadFromArrays();
 }
-
+/*
 void Mesh::Subdivide()
 {
 	vector<Face*> startingFaces = faces;
@@ -274,52 +281,107 @@ void Mesh::Subdivide()
 		addFace(c, a, center, color, emission);
 	}
 }
+*/
 
-/*
 //WORKING!!!
 void Mesh::Subdivide()
 {
-vector<Face*> startingFaces = faces;
-int numStartingFaces = startingFaces.size();
+	vector<Face*> startingFaces = faces;
+	int numStartingFaces = startingFaces.size();
 
-for(int i=0; i<numStartingFaces; i++)
+	for(int i=0; i<numStartingFaces; i++)
+	{
+		//for every face, get the 3 vertices, add a new vertex at their centroid, then delete the old face and add the 3 new ones
+
+		//first get the centroid
+		glm::vec3 centroid = faces[i]->getCentroid();
+
+		//make a new vertex with that position
+		Vertex* center = new Vertex(numVertices(), centroid);
+
+		//add it to the back of the vertex array
+		vertices.push_back(center);
+
+		//then get the current face's 3 other vertices
+		Vertex* a = (*faces[i])[0];
+		Vertex* b = (*faces[i])[1];
+		Vertex* c = (*faces[i])[2];
+
+		//and the color and emission
+		glm::vec3 color = faces[i]->getColor();
+		glm::vec3 emission = faces[i]->getEmission();
+		
+		removeFace(faces[i]);
+
+		//add the 3 new faces
+		addFace(a, b, center, color, emission);
+		addFace(b, c, center, color, emission);
+		addFace(c, a, center, color, emission);
+
+		//delete the old one
+		//removeFace(faces[i]);
+	}
+}
+
+
+void Mesh::cacheVertexPositions()
 {
-
-//for every face, get the 3 vertices, add a new vertex at their centroid, then delete the old face and add the 3 new ones
-
-//first get the centroid
-glm::vec3 centroid = faces[i]->getCentroid();
-
-//make a new vertex with that position
-Vertex* center = new Vertex(numVertices(), centroid);
-
-//add it to the back of the vertex array
-vertices.push_back(center);
-
-//then get the current face's 3 other vertices
-Vertex* a = (*faces[i])[0];
-Vertex* b = (*faces[i])[1];
-Vertex* c = (*faces[i])[2];
-
-//and the color and emission
-glm::vec3 color = faces[i]->getColor();
-glm::vec3 emission = faces[i]->getEmission();
-
-
-removeFace(faces[i]);
-
-//add the 3 new faces
-addFace(a, b, center, color, emission);
-addFace(b, c, center, color, emission);
-addFace(c, a, center, color, emission);
-
-//delete the old one
-//removeFace(faces[i]);
+	vertex_positions.clear();
+	for(int i=0; i<vertices.size(); i++)
+	{
+		vertex_positions.push_back(vertices[i]->x());
+		vertex_positions.push_back(vertices[i]->y());
+		vertex_positions.push_back(vertices[i]->z());
+	}
 }
-}
-*/
 
-void Mesh::Draw()
+//WARNING! Call this last!!!
+void Mesh::cacheVertexColors()
+{
+	vertex_colors.clear();
+	vertex_colors.resize(face_indexes.size());
+	for(int i=0; i<face_indexes.size(); i+= 3)
+	{
+		glm::vec3 faceColor = faces[i/3]->getColor();
+		
+		int index_a = face_indexes[i];
+		int index_b = face_indexes[i+1];
+		int index_c = face_indexes[i+2];
+
+		vertex_colors[index_a] = faceColor.r;
+		vertex_colors[index_a+1] = faceColor.g;
+		vertex_colors[index_a+2] = faceColor.b;
+
+		vertex_colors[index_b] = faceColor.r;
+		vertex_colors[index_b+1] = faceColor.g;
+		vertex_colors[index_b+2] = faceColor.b;
+
+		vertex_colors[index_c] = faceColor.r;
+		vertex_colors[index_c+1] = faceColor.g;
+		vertex_colors[index_c+2] = faceColor.b;
+	}
+}
+
+void Mesh::cacheFaceIndexes()
+{
+	face_indexes.clear();
+	for(int i=0; i< faces.size(); i++)
+	{
+		HalfEdge* startEdge = faces[i]->getEdge();
+		Vertex* start = startEdge->getVertex();
+
+		face_indexes.push_back(start->getIndex());
+
+		HalfEdge* currentEdge = startEdge->getNext();
+		while(currentEdge->getVertex() != start)
+		{
+			face_indexes.push_back(currentEdge->getVertex()->getIndex());
+			currentEdge = currentEdge->getNext();
+		}
+	}
+}
+
+void Mesh::DrawWireframe()
 {
 	glm::vec3 center = bbox->getCenter();
 	float s = 1.0/bbox->maxDim();
@@ -342,9 +404,9 @@ void Mesh::Draw()
 			glm::vec3 color = f->getColor();
 			
 			glColor3f(color.x, color.y, color.z);
-			glm::vec3 a = (*f)[0]->getPositionVec3();
-			glm::vec3 b = (*f)[1]->getPositionVec3();
-			glm::vec3 c = (*f)[2]->getPositionVec3();
+			glm::vec3 a = (*f)[0]->getPosition();
+			glm::vec3 b = (*f)[1]->getPosition();
+			glm::vec3 c = (*f)[2]->getPosition();
 			
 			glVertex3f(a.x,a.y,a.z);
 			glVertex3f(b.x,b.y,b.z);
@@ -368,30 +430,51 @@ GLuint Mesh::LoadShaders()
 
 void Mesh::PrepareToDraw()
 {
+	cacheVertexPositions();
+	cacheFaceIndexes();
+	cacheVertexColors();
+
 	//create a vertex buffer
 	glGenBuffers(1, &vertexBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
 
 	//fill the vertex buffer with our mesh's data
-	glBufferData(GL_ARRAY_BUFFER, file_vertices.size(), file_vertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertex_positions.size() * sizeof(GLfloat), &vertex_positions[0], GL_STATIC_DRAW);
+
+	//create a color buffer
+	glGenBuffers(1, &colorBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, colorBufferID);
+	//fill the color buffer with random values
+	glBufferData(GL_ARRAY_BUFFER, vertex_colors.size() * sizeof(GLfloat), &vertex_colors[0], GL_STATIC_DRAW);
+
+	// Generate a buffer for the indices
+	glGenBuffers(1, &elementBufferID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferID);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_indexes.size() * sizeof(GLuint), &face_indexes[0], GL_STATIC_DRAW);
+
 }
 
 void Mesh::Cleanup()
 {
 	glDeleteBuffers(1, &vertexBufferID);
+	glDeleteBuffers(1, &colorBufferID);
+	glDeleteBuffers(1, &elementBufferID);
 	glDeleteProgram(shaderProgramID);
 }
 
-void Mesh::DrawWireframe()
+void Mesh::Draw()
 {
 	// Use our shader
 	glUseProgram(shaderProgramID);
-
+//=============================== CONFIGURATION
 	// Get a handle for our buffers
 	//this will be our "vertex location" attribute
 
 	// Get a handle to the vertexPosition_modelspace parameter from the shader
 	GLuint vertexPosition_modelspaceID = glGetAttribLocation(shaderProgramID, "vertexPosition_modelspace");
+
+	//Get a handle to the vertexColor parameter from the shader
+	GLuint vertexColorID = glGetAttribLocation(shaderProgramID, "vertexColor");
 
 	// Get a handle for our "MVP" uniform from the shader
 	GLuint MVP_MatrixID = glGetUniformLocation(shaderProgramID, "MVP");
@@ -399,7 +482,7 @@ void Mesh::DrawWireframe()
 	// Send our ModelViewProjectionMatrix to the currently bound shader, in the "MVP" parameter
 	glUniformMatrix4fv(MVP_MatrixID, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 
-	// 1rst attribute buffer will be the "vertex location" we got from the shader
+// 1rst attribute buffer will be the "vertex location" we got from the shader
 	glEnableVertexAttribArray(vertexPosition_modelspaceID);
 
 	//use the vertex buffer
@@ -414,13 +497,36 @@ void Mesh::DrawWireframe()
 			GL_FLOAT,           // type
 			GL_FALSE,           // normalized?
 			0,                  // stride
-			0            // array buffer offset
+			(void*)0            // array buffer offset
 		);
 
+// 2nd attribute buffer : colors
+	glEnableVertexAttribArray(vertexColorID);
+	glBindBuffer(GL_ARRAY_BUFFER, colorBufferID);
+	glVertexAttribPointer(
+		vertexColorID,                    // The attribute we want to configure
+		3,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+		);
+
+// 3rd attribute buffer: indexes
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferID);
+
+//============================================================================
+
 	//draw the data we gave as a triangle
-	glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
+	glDrawElements(
+		GL_TRIANGLES,      // mode
+		face_indexes.size(),    // count
+		GL_UNSIGNED_INT,   // type
+		(void*)0           // element array buffer offset
+		);
 
 	//remove the attribute
 	glDisableVertexAttribArray(vertexPosition_modelspaceID);
+	glDisableVertexAttribArray(vertexColorID);
 
 }

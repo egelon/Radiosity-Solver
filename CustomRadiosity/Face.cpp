@@ -52,9 +52,9 @@ Vertex* Face::operator[](int i) const
 
 glm::vec3 Face::getCentroid() const
 {
-	glm::vec3 a = (*this)[0]->getPositionVec3();
-	glm::vec3 b = (*this)[1]->getPositionVec3();
-	glm::vec3 c = (*this)[2]->getPositionVec3();
+	glm::vec3 a = (*this)[0]->getPosition();
+	glm::vec3 b = (*this)[1]->getPosition();
+	glm::vec3 c = (*this)[2]->getPosition();
 
 	glm::vec3 result (
 			(a.x + b.x + c.x) / 3.0f,
@@ -67,9 +67,9 @@ glm::vec3 Face::getCentroid() const
 
 glm::vec3 Face::getNormal() const
 {
-	glm::vec3 a = (*this)[0]->getPositionVec3();
-	glm::vec3 b = (*this)[1]->getPositionVec3();
-	glm::vec3 c = (*this)[2]->getPositionVec3();
+	glm::vec3 a = (*this)[0]->getPosition();
+	glm::vec3 b = (*this)[1]->getPosition();
+	glm::vec3 c = (*this)[2]->getPosition();
 	
 	return glm::normalize(glm::cross(c - a, b - a));
 }
