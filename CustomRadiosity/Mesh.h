@@ -6,6 +6,7 @@
 #include "Face.h"
 #include "BoundingBox.h"
 #include "ShaderLoader.h"
+#include "SceneObject.h"
 
 #include <GL/glew.h>
 
@@ -79,10 +80,13 @@ private:
 	vector<GLuint> face_indexes;
 	vector<GLfloat> face_normals;
 
+	/*
 	vector<glm::vec3> file_vertices;
 	vector<glm::vec3> file_colors;
 	vector<glm::vec3> file_normals;
 	vector<GLuint> file_elements;
+	*/
+	vector<SceneObject> sceneModel;
 
 	glm::mat4 ModelViewProjectionMatrix;
 

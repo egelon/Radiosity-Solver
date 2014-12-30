@@ -94,6 +94,9 @@
     <ClInclude Include="functions.h" />
     <ClInclude Include="HalfEdge.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="ModelFace.h" />
+    <ClInclude Include="ObjectModel.h" />
+    <ClInclude Include="SceneObject.h" />
     <ClInclude Include="ShaderLoader.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>

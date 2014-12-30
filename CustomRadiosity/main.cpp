@@ -68,10 +68,10 @@ int main( void )
 
 	Mesh* mesh = new Mesh();
 
-	mesh->Load("cube.obj");
+	mesh->Load("test.obj");
 
-	mesh->Subdivide();
-	mesh->Subdivide();
+	//mesh->Subdivide();
+	//mesh->Subdivide();
 	//mesh->Subdivide();
 
 	// Create and compile our GLSL program from the mesh's shaders
@@ -89,7 +89,7 @@ int main( void )
 
 	// Camera matrix
 	glm::mat4 View = glm::lookAt(
-						glm::vec3(4,3,-3), // Camera is at (4,3,3), in World Space
+						glm::vec3(0,0,4), // Camera is at (4,3,3), in World Space
 						glm::vec3(0,0,0), // and looks at the origin
 						glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
 					);

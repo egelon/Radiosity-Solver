@@ -9,6 +9,10 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
+#include <vector>
+#include <iterator>
+#include <regex>
 
 
 
@@ -149,6 +153,130 @@ vector<Vertex*> Mesh::getVertices() const { return vertices; }
 vector<HalfEdge*> Mesh::getHalfEdges() const { return halfEdges; }
 vector<Face*> Mesh::getFaces() const { return faces; }
 
+vector<string> split(const string& s, const string& delim, const bool keep_empty = true)
+{
+	vector<string> result;
+	if (delim.empty())
+	{
+		result.push_back(s);
+		return result;
+	}
+	string::const_iterator substart = s.begin(), subend;
+	while (true)
+	{
+		subend = search(substart, s.end(), delim.begin(), delim.end());
+		string temp(substart, subend);
+		if (keep_empty || !temp.empty())
+		{
+			result.push_back(temp);
+		}
+		if (subend == s.end())
+		{
+			break;
+		}
+		substart = subend + delim.size();
+	}
+	return result;
+}
+
+void parseObject(ifstream& fileStream, SceneObject& currentObject)
+{
+	string line;
+	std::string prefix;
+	while(getline(fileStream, line))
+	{
+		//found another object, end parsing
+		prefix = "o ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			return;
+		}
+
+		//load vertex data
+		prefix = "v ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			const vector<string> tokens = split(line, " ", false);
+			glm::vec3 vertex(stod(tokens[1]), stod(tokens[2]), stod(tokens[3]));
+			currentObject.obj_model.vertices.push_back(vertex);
+		}
+
+		//load texture UV/W coordinates
+		prefix = "vt ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			const vector<string> tokens = split(line, " ", false);
+
+			float u = stod(tokens[1]);
+			float v = stod(tokens[2]);
+			float w = 0.0f;
+			if(tokens.size() > 3)
+				w = stod(tokens[3]);
+
+			glm::vec3 textureUVW_coord(u, v, w);
+			currentObject.obj_model.textureUVW.push_back(textureUVW_coord);
+		}
+
+		//load vertex normals data
+		prefix = "vn ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			const vector<string> tokens = split(line, " ", false);
+			glm::vec3 vertexNormal(stod(tokens[1]), stod(tokens[2]), stod(tokens[3]));
+			currentObject.obj_model.vertexNormals.push_back(vertexNormal);
+		}
+
+		//load faces
+		prefix = "f ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			const vector<string> tokens = split(line, " ", false);
+			ModelFace face;
+			int numIndexes = tokens.size() - 1;
+			if(tokens[1].find("//") != string::npos) //we have vertex//normals
+			{
+				face.vertexIndexes.resize(numIndexes);
+				face.normalIndexes.resize(numIndexes);
+
+				for(int i=1; i<tokens.size(); i++)
+				{
+					vector<string> tmp = split(tokens[i], "//", false);
+					face.vertexIndexes[i-1] = stoi(tmp[0]) - 1;
+					face.normalIndexes[i-1] = stoi(tmp[1]) - 1;
+				}
+			}
+			else if(regex_match(tokens[1], regex("\\d+/\\d+/\\d+"))) //we have vertex/texture/normal
+			{
+				face.vertexIndexes.resize(numIndexes);
+				face.normalIndexes.resize(numIndexes);
+				face.textureIndexes.resize(numIndexes);
+
+				for(int i=1; i<tokens.size(); i++)
+				{
+					vector<string> tmp = split(tokens[i], "/", false);
+					face.vertexIndexes[i-1] = stoi(tmp[0]) - 1;
+					face.textureIndexes[i-1] = stoi(tmp[1]) - 1;
+					face.normalIndexes[i-1] = stoi(tmp[2]) - 1;
+				}
+			}
+			else //we have vertex/texture
+			{
+				face.vertexIndexes.resize(numIndexes);
+				face.textureIndexes.resize(numIndexes);
+
+				for(int i=1; i<tokens.size(); i++)
+				{
+					vector<string> tmp = split(tokens[i], "/", false);
+					face.vertexIndexes[i-1] = stoi(tmp[0]) - 1;
+					face.textureIndexes[i-1] = stoi(tmp[1]) - 1;
+				}
+			}
+
+			currentObject.obj_model.faces.push_back(face);
+		}
+	}
+}
+
 void Mesh::LoadToArrays(string input_file)
 {
 	ifstream fileStream(input_file, ios::in);
@@ -159,91 +287,67 @@ void Mesh::LoadToArrays(string input_file)
 		exit(1);
 	}
 
+	
+
 	string line;
-	while(getline(fileStream, line))
+	std::string prefix;
+	int currentObjectId = 0;
+
+	int streamPos = 0;
+
+	while(!fileStream.eof())
 	{
-
-		//if we read a vertex
-		if(line.substr(0, 2) == "v ")
-		{
-			istringstream str(line.substr(2));
-			float x,y,z;
-
-			str >> x >> y >> z;
-			glm::vec3 vertex(x, y, z);
-
-			file_vertices.push_back(vertex);
-		}
-		//if we read a face
-		else if(line.substr(0, 2) == "f ")
-		{
-			istringstream str(line.substr(2));
-			GLshort a,b,c;
-			str >> a >> b >> c;
-			(a<0)? a*= -1.0 : a=a;
-			(b<0)? b*= -1.0 : b=b;
-			(c<0)? c*= -1.0 : c=c;
-			file_elements.push_back(a - 1);
-			file_elements.push_back(b - 1);
-			file_elements.push_back(c - 1);
-		}
-		else if (line[0] == '#') { /* ignoring this line */ }
-		else { /* ignoring this line */ }
+		//found another object, end parsing
+		
+			SceneObject currentObject;
+			currentObject.obj_id = currentObjectId;
+			parseObject(fileStream, currentObject);
+			sceneModel.push_back(currentObject);
+			currentObjectId ++;
+		
 	}
 
-	file_normals.resize(file_vertices.size(), glm::vec3(0.0, 0.0, 0.0));
+	sceneModel.erase(sceneModel.begin());
 
-	for(int i=0; i<file_elements.size(); i+=3)
-	{
-		GLushort ia = file_elements[i];
-		GLushort ib = file_elements[i+1];
-		GLushort ic = file_elements[i+2];
-
-		glm::vec3 normal = glm::normalize(glm::cross(
-			glm::vec3(file_vertices[ib]) - glm::vec3(file_vertices[ia]),
-			glm::vec3(file_vertices[ic]) - glm::vec3(file_vertices[ia])
-			));
-		file_normals[ia] = normal;
-		file_normals[ib] = normal;
-		file_normals[ic] = normal;
-	}
-
-	for(int i=0; i<file_vertices.size(); i++)
-	{
-		float r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0f));
-		float g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0f));
-		float b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0f));
-		file_colors.push_back(glm::vec3(r, g, b));
-	}
+	
 }
 
 void Mesh::LoadFromArrays()
 {
-	//to create a mesh:
-	//first add the 3 vertices for a face
-	//then add a face from them
-
-	//load all vertices
-	for(int i=0; i<file_vertices.size(); i++)
+	//load all objects from the model
+	for(int i=0; i< sceneModel.size(); i++)
 	{
-		addVertex(file_vertices[i]);
-	}
+		//add all vertices of the object
+		for(int j=0; j<sceneModel[i].obj_model.vertices.size(); j++)
+		{
+			addVertex(sceneModel[i].obj_model.vertices[j]);
+		}
+		//for each face, get all it's vertices and add the face to the mesh
+		for(int j=0; j<sceneModel[i].obj_model.faces.size(); j++)
+		{
+			ModelFace currentFace = sceneModel[i].obj_model.faces[j];
+			int numIndexes = currentFace.vertexIndexes.size();
 
-	//for each face, get it's 3 vertices and add the face to the mesh
-	for(int i=0; i<file_elements.size(); i+=3)
-	{
-		GLuint index_a = file_elements[i];
-		GLuint index_b = file_elements[i+1];
-		GLuint index_c = file_elements[i+2];
+			Vertex* a = getVertexByIndex(currentFace.vertexIndexes[0]);
+			Vertex* b = getVertexByIndex(currentFace.vertexIndexes[1]);
+			Vertex* c = getVertexByIndex(currentFace.vertexIndexes[2]);
+			Vertex* d = NULL;
 
-		Vertex* a = getVertexByIndex(index_a);
-		Vertex* b = getVertexByIndex(index_b);
-		Vertex* c = getVertexByIndex(index_c);
+			//FOR DEBUG
+			float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
 
-		glm::vec3 faceColor(1.0, 1.0, 1.0);
-		glm::vec3 faceEmission(0.0, 0.0, 0.0);
+			glm::vec3 faceColor(color_r, color_g, color_b);
+			glm::vec3 faceEmission(0.0, 0.0, 0.0);
 
-		addFace(a, b, c, file_colors[index_a], faceEmission);
+			addFace(a, b, c, faceColor, faceEmission);
+			if(numIndexes > 3)
+			{
+				d = getVertexByIndex(currentFace.vertexIndexes[3]);
+				addFace(a, c, d, faceColor, faceEmission);
+			}
+		}
 	}
 }
 
