@@ -179,10 +179,113 @@ vector<string> split(const string& s, const string& delim, const bool keep_empty
 	return result;
 }
 
-void parseObject(ifstream& fileStream, SceneObject& currentObject)
+Material* Mesh::getMaterialPtrByName(string matName)
+{
+	for(int i=0; i<materials.size(); i++)
+		if(materials[i].name == matName)
+			return &materials[i];
+}
+
+void parseCurrentMaterial(Material& currentMaterial, ifstream& fileStream, string line)
+{
+	currentMaterial.name = line;
+
+	string prefix;
+	vector<string> tokens;
+	while(getline(fileStream, line))
+	{
+		tokens = split(line, " ", false);
+
+		//specular exponent
+		prefix = "Ns ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			currentMaterial.specularColorExponent = stod(tokens[1]);
+		}
+
+		//ambient color
+		prefix = "Ka ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			glm::vec3 ambColor(stod(tokens[1]), stod(tokens[2]), stod(tokens[3]));
+			currentMaterial.ambientColor = ambColor;
+		}
+
+		//diffuse color
+		prefix = "Kd ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			glm::vec3 diffColor(stod(tokens[1]), stod(tokens[2]), stod(tokens[3]));
+			currentMaterial.diffuseColor = diffColor;
+		}
+
+		//specular color
+		prefix = "Ks ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			glm::vec3 specColor(stod(tokens[1]), stod(tokens[2]), stod(tokens[3]));
+			currentMaterial.specularColor = specColor;
+		}
+
+
+		//optical density
+		prefix = "Ni ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			currentMaterial.opticalDensity = stod(tokens[1]);
+		}
+
+		//transparency
+		string prefix1 = "d ";
+		string prefix2 = "Tr ";
+		if (!line.compare(0, prefix1.size(), prefix1) || !line.compare(0, prefix2.size(), prefix2))
+		{
+			currentMaterial.alpha = stod(tokens[1]);
+		}
+
+		//illumination mode
+		prefix = "illum ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			currentMaterial.illuminationMode = (IlluminationModes)stoi(tokens[1]);
+			return;
+		}
+	}
+}
+
+void Mesh::parseMaterials(string materialsFileName)
+{
+	ifstream fileStream(materialsFileName, ios::in);
+
+	if (!fileStream)
+	{
+		cout << "ERROR: cannot open file " << materialsFileName << endl;
+		exit(1);
+	}
+
+	string line;
+	std::string prefix;
+	vector<string> tokens;
+	while(getline(fileStream, line))
+	{
+		tokens = split(line, " ", false);
+		prefix = "newmtl ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			Material currentMaterial;
+			parseCurrentMaterial(currentMaterial, fileStream, tokens[1]);
+			materials.push_back(currentMaterial);
+		}
+	}
+	fileStream.close();
+}
+
+void Mesh::parseObject(ifstream& fileStream, SceneObject& currentObject)
 {
 	string line;
 	std::string prefix;
+	Material* currentMaterial = NULL;
+	vector<string> tokens;
 	while(getline(fileStream, line))
 	{
 		//found another object, end parsing
@@ -196,7 +299,7 @@ void parseObject(ifstream& fileStream, SceneObject& currentObject)
 		prefix = "v ";
 		if (!line.compare(0, prefix.size(), prefix))
 		{
-			const vector<string> tokens = split(line, " ", false);
+			tokens = split(line, " ", false);
 			glm::vec3 vertex(stod(tokens[1]), stod(tokens[2]), stod(tokens[3]));
 			currentObject.obj_model.vertices.push_back(vertex);
 		}
@@ -205,7 +308,7 @@ void parseObject(ifstream& fileStream, SceneObject& currentObject)
 		prefix = "vt ";
 		if (!line.compare(0, prefix.size(), prefix))
 		{
-			const vector<string> tokens = split(line, " ", false);
+			tokens = split(line, " ", false);
 
 			float u = stod(tokens[1]);
 			float v = stod(tokens[2]);
@@ -221,17 +324,26 @@ void parseObject(ifstream& fileStream, SceneObject& currentObject)
 		prefix = "vn ";
 		if (!line.compare(0, prefix.size(), prefix))
 		{
-			const vector<string> tokens = split(line, " ", false);
+			tokens = split(line, " ", false);
 			glm::vec3 vertexNormal(stod(tokens[1]), stod(tokens[2]), stod(tokens[3]));
 			currentObject.obj_model.vertexNormals.push_back(vertexNormal);
 		}
 
+		
+		//load face materials
+		prefix = "usemtl ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			tokens = split(line, " ", false);
+			currentMaterial = getMaterialPtrByName(tokens[1]);
+		}
 		//load faces
 		prefix = "f ";
 		if (!line.compare(0, prefix.size(), prefix))
 		{
-			const vector<string> tokens = split(line, " ", false);
+			tokens = split(line, " ", false);
 			ModelFace face;
+			
 			int numIndexes = tokens.size() - 1;
 			if(tokens[1].find("//") != string::npos) //we have vertex//normals
 			{
@@ -271,7 +383,7 @@ void parseObject(ifstream& fileStream, SceneObject& currentObject)
 					face.textureIndexes[i-1] = stoi(tmp[1]) - 1;
 				}
 			}
-
+			face.material = currentMaterial;
 			currentObject.obj_model.faces.push_back(face);
 		}
 	}
@@ -295,6 +407,20 @@ void Mesh::LoadToArrays(string input_file)
 
 	int streamPos = 0;
 
+	while(getline(fileStream, line))
+	{
+		//parse materials file
+		prefix = "mtllib ";
+		if (!line.compare(0, prefix.size(), prefix))
+		{
+			vector<string> tokens = split(line, " ", false);
+			parseMaterials(tokens[1]);
+			break;
+		}
+	}
+
+	fileStream.seekg(ios_base::beg);
+
 	while(!fileStream.eof())
 	{
 		//found another object, end parsing
@@ -306,10 +432,9 @@ void Mesh::LoadToArrays(string input_file)
 			currentObjectId ++;
 		
 	}
+	fileStream.close();
 
 	sceneModel.erase(sceneModel.begin());
-
-	
 }
 
 void Mesh::LoadFromArrays()
@@ -334,12 +459,17 @@ void Mesh::LoadFromArrays()
 			Vertex* d = NULL;
 
 			//FOR DEBUG
-			float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-			float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-			float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			//float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			//float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			//float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
 
-			glm::vec3 faceColor(color_r, color_g, color_b);
-			glm::vec3 faceEmission(0.0, 0.0, 0.0);
+			glm::vec3 faceColor(currentFace.material->diffuseColor.r, currentFace.material->diffuseColor.g, currentFace.material->diffuseColor.b);
+			
+			glm::vec3 faceEmission;
+			if(currentFace.material->illuminationMode == COLOR) // if the face is a light source
+				faceEmission = glm::vec3(currentFace.material->diffuseColor.r, currentFace.material->diffuseColor.g, currentFace.material->diffuseColor.b);
+			else
+				faceEmission = glm::vec3(0.0, 0.0, 0.0);
 
 			addFace(a, b, c, faceColor, faceEmission);
 			if(numIndexes > 3)
@@ -453,6 +583,130 @@ void Mesh::cacheVertexPositions()
 	}
 }
 
+void Mesh::cacheFaceIndexes()
+{
+	face_indexes.clear();
+	for(int i=0; i< faces.size(); i++)
+	{
+		HalfEdge* startEdge = faces[i]->getEdge();
+		Vertex* start = startEdge->getVertex();
+
+		face_indexes.push_back(start->getIndex());
+
+		HalfEdge* currentEdge = startEdge->getNext();
+		while(currentEdge->getVertex() != start)
+		{
+			face_indexes.push_back(currentEdge->getVertex()->getIndex());
+			currentEdge = currentEdge->getNext();
+		}
+	}
+}
+
+bool HasIndexBeenAdded(vector<int>& indexes, int current)
+{
+	if(indexes.empty())
+		return false;
+	for(int i=0; i<indexes.size(); i++)
+		if(current == indexes[i])
+			return true;
+	return false;
+}
+
+void Mesh::cacheVerticesFacesAndColors()
+{
+	vertex_positions.clear();
+	//vertex_positions.resize(faces.size() * 3);
+
+	face_indexes.clear();
+
+	vertex_colors.clear();
+	//vertex_colors.resize(vertex_positions.size());
+
+	int lastMeshVertexIndex = vertices.size();
+
+	vector<int> alreadyAddedIndexes;
+
+	for(int i=0; i< faces.size(); i++)
+	{
+		HalfEdge* startEdge = faces[i]->getEdge();
+		Vertex* start = startEdge->getVertex();
+		glm::vec3 currentColor = faces[i]->getColor();
+
+		vertex_positions.push_back(start->x());
+		vertex_positions.push_back(start->y());
+		vertex_positions.push_back(start->z());
+
+		face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+		vertex_colors.push_back(currentColor.r);
+		vertex_colors.push_back(currentColor.g);
+		vertex_colors.push_back(currentColor.b);
+
+		HalfEdge* currentEdge = startEdge->getNext();
+		while(currentEdge->getVertex() != start)
+		{
+			Vertex* currentVertex = currentEdge->getVertex();
+			
+			vertex_positions.push_back(currentVertex->x());
+			vertex_positions.push_back(currentVertex->y());
+			vertex_positions.push_back(currentVertex->z());
+
+			face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+			vertex_colors.push_back(currentColor.r);
+			vertex_colors.push_back(currentColor.g);
+			vertex_colors.push_back(currentColor.b);
+
+			currentEdge = currentEdge->getNext();
+		}
+	}
+/*
+		if(HasIndexBeenAdded(alreadyAddedIndexes, currentIndex))
+		{
+			currentIndex += lastMeshVertexIndex;
+		}
+		alreadyAddedIndexes.push_back(currentIndex);
+
+		//cache start vertex
+		vertex_positions[currentIndex * 3] = start->x();
+		vertex_positions[currentIndex * 3 + 1] = start->y();
+		vertex_positions[currentIndex * 3 + 2] = start->z();
+
+		//cache starting face index
+		face_indexes.push_back(currentIndex);
+		//face_indexes.push_back(vertex_positions.size() - 3);
+
+		//cache the color
+		vertex_colors[currentIndex * 3] = currentColor.r;
+		vertex_colors[currentIndex * 3 + 1] = currentColor.g;
+		vertex_colors[currentIndex * 3 + 2] = currentColor.b;
+
+		HalfEdge* currentEdge = startEdge->getNext();
+		while(currentEdge->getVertex() != start)
+		{
+			Vertex* currentVertex = currentEdge->getVertex();
+			currentIndex = currentVertex->getIndex();
+
+			//cache start vertex
+			vertex_positions[currentIndex * 3] = currentVertex->x();
+			vertex_positions[currentIndex * 3 + 1] = currentVertex->y();
+			vertex_positions[currentIndex * 3 + 2] = currentVertex->z();
+
+			//cache starting face index
+			face_indexes.push_back(currentIndex);
+			//face_indexes.push_back(vertex_positions.size() - 3);
+
+			//cache the color
+			vertex_colors[currentIndex * 3] = currentColor.r;
+			vertex_colors[currentIndex * 3 + 1] = currentColor.g;
+			vertex_colors[currentIndex * 3 + 2] = currentColor.b;
+
+			currentEdge = currentEdge->getNext();
+		}
+	}
+	*/
+}
+
 //WARNING! Call this last!!!
 void Mesh::cacheVertexColors()
 {
@@ -477,25 +731,6 @@ void Mesh::cacheVertexColors()
 		vertex_colors[index_c] = faceColor.r;
 		vertex_colors[index_c+1] = faceColor.g;
 		vertex_colors[index_c+2] = faceColor.b;
-	}
-}
-
-void Mesh::cacheFaceIndexes()
-{
-	face_indexes.clear();
-	for(int i=0; i< faces.size(); i++)
-	{
-		HalfEdge* startEdge = faces[i]->getEdge();
-		Vertex* start = startEdge->getVertex();
-
-		face_indexes.push_back(start->getIndex());
-
-		HalfEdge* currentEdge = startEdge->getNext();
-		while(currentEdge->getVertex() != start)
-		{
-			face_indexes.push_back(currentEdge->getVertex()->getIndex());
-			currentEdge = currentEdge->getNext();
-		}
 	}
 }
 
@@ -548,9 +783,11 @@ GLuint Mesh::LoadShaders()
 
 void Mesh::PrepareToDraw()
 {
-	cacheVertexPositions();
-	cacheFaceIndexes();
-	cacheVertexColors();
+	//cacheVertexPositions();
+	//cacheFaceIndexes();
+	//cacheVertexColors();
+
+	cacheVerticesFacesAndColors();
 
 	//create a vertex buffer
 	glGenBuffers(1, &vertexBufferID);
@@ -562,7 +799,7 @@ void Mesh::PrepareToDraw()
 	//create a color buffer
 	glGenBuffers(1, &colorBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, colorBufferID);
-	//fill the color buffer with random values
+	//fill the color buffer
 	glBufferData(GL_ARRAY_BUFFER, vertex_colors.size() * sizeof(GLfloat), &vertex_colors[0], GL_STATIC_DRAW);
 
 	// Generate a buffer for the indices

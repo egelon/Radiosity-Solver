@@ -7,6 +7,7 @@
 #include "BoundingBox.h"
 #include "ShaderLoader.h"
 #include "SceneObject.h"
+#include "Material.h"
 
 #include <GL/glew.h>
 
@@ -60,10 +61,17 @@ public:
 	void cacheFaceIndexes();
 	void cacheFaceNormals();
 
+	void cacheVerticesFacesAndColors();
+
 
 private:
 	void LoadToArrays(string input_file);
 	void LoadFromArrays();
+
+	void parseObject(ifstream& fileStream, SceneObject& currentObject);
+
+	void parseMaterials(string materialsFileName);
+	Material* getMaterialPtrByName(string matName);
 
 	void addFace(Vertex *a, Vertex *b, Vertex *c, const glm::vec3& col, const glm::vec3& emit);
 	void removeFace(Face *f);
@@ -80,13 +88,8 @@ private:
 	vector<GLuint> face_indexes;
 	vector<GLfloat> face_normals;
 
-	/*
-	vector<glm::vec3> file_vertices;
-	vector<glm::vec3> file_colors;
-	vector<glm::vec3> file_normals;
-	vector<GLuint> file_elements;
-	*/
 	vector<SceneObject> sceneModel;
+	vector<Material> materials;
 
 	glm::mat4 ModelViewProjectionMatrix;
 

@@ -87,17 +87,20 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="ShaderLoader.cpp" />
+    <ClCompile Include="UserControls.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="Face.h" />
     <ClInclude Include="functions.h" />
     <ClInclude Include="HalfEdge.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="ModelFace.h" />
     <ClInclude Include="ObjectModel.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="ShaderLoader.h" />
+    <ClInclude Include="UserControls.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
