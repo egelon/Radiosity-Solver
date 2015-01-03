@@ -1,10 +1,6 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "Vertex.h"
-#include "HalfEdge.h"
-#include "Face.h"
-#include "BoundingBox.h"
 #include "ShaderLoader.h"
 #include "SceneObject.h"
 #include "Material.h"
@@ -30,21 +26,14 @@ public:
 	void Load(string input_file);
 
 	void Subdivide();
+	void ResetMesh();
 	void PrepareToDraw();
 	void DrawWireframe();
 	void Cleanup();
 	void Draw();
 
-	int numVertices() const;
-	int numHalfEdges() const;
-	int numFaces() const;
+	void OutputToBitmap(string bmpName, int width, int height);
 
-	Vertex* getVertexByIndex(int index) const;
-	HalfEdge* getEdge(Vertex *a, Vertex *b) const; //edge that starts from a and goes to b
-
-	vector<Vertex*> getVertices() const;
-	vector<HalfEdge*> getHalfEdges() const;
-	vector<Face*> getFaces() const;
 
 	GLuint LoadShaders();
 
@@ -56,32 +45,15 @@ public:
 	vector<GLuint> GLUI_getFaceIndexes() { return face_indexes; };
 	vector<GLfloat> GLF_getFaceNormals() { return face_normals; };
 
-	void cacheVertexPositions();
-	void cacheVertexColors();
-	void cacheFaceIndexes();
-	void cacheFaceNormals();
-
 	void cacheVerticesFacesAndColors();
 
 
 private:
-	void LoadToArrays(string input_file);
-	void LoadFromArrays();
 
 	void parseObject(ifstream& fileStream, SceneObject& currentObject);
 
 	void parseMaterials(string materialsFileName);
 	Material* getMaterialPtrByName(string matName);
-
-	void addFace(Vertex *a, Vertex *b, Vertex *c, const glm::vec3& col, const glm::vec3& emit);
-	void removeFace(Face *f);
-	
-	Vertex* addVertex(const glm::vec3& position);
-
-	vector<Vertex*> vertices;
-	vector<HalfEdge*> halfEdges;
-	vector<Face*> faces;
-	BoundingBox* bbox;
 
 	vector<GLfloat> vertex_positions;
 	vector<GLfloat> vertex_colors;
@@ -89,6 +61,8 @@ private:
 	vector<GLfloat> face_normals;
 
 	vector<SceneObject> sceneModel;
+	vector<SceneObject> startingSceneModel;
+
 	vector<Material> materials;
 
 	glm::mat4 ModelViewProjectionMatrix;

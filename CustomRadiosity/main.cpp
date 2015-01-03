@@ -24,6 +24,14 @@ int main( void )
 {
 	int windowWidth = 1024;
 	int windowHeight = 768;
+	glm::vec3 cameraPosition( 0, 0, 5 );
+	float horizontalAngle = 3.14f;
+	float verticalAngle = 0.0f;
+	float initialFoV = 45.0f;
+	float nearClippingPlane = 0.1f;
+	float farClippingPlane = 100.0f;
+	float moveSpeed = 3.0f;
+	float mouseSpeed = 0.0005f;
 
 	// Initialise GLFW
 	if( !glfwInit() )
@@ -77,8 +85,18 @@ int main( void )
 
 	//glShadeModel(GL_FLAT);
 
-	UserControls userControls(windowWidth, windowHeight, glm::vec3( 0, 0, 5 ), 3.14f, 0.0f, 45.0f, 3.0f, 0.0005f);
-
+	UserControls userControls(
+			windowWidth,
+			windowHeight,
+			cameraPosition,
+			horizontalAngle,
+			verticalAngle,
+			initialFoV,
+			nearClippingPlane,
+			farClippingPlane,
+			moveSpeed,
+			mouseSpeed
+		);
 	Mesh* mesh = new Mesh();
 
 	mesh->Load("test.obj");
@@ -122,7 +140,7 @@ int main( void )
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-		userControls.computeMatricesFromInputs();
+		userControls.computeMatricesFromInputs(mesh);
 		glm::mat4 ProjectionMatrix = userControls.getProjectionMatrix();
 		glm::mat4 ViewMatrix = userControls.getViewMatrix();
 		glm::mat4 ModelMatrix = glm::mat4(1.0);

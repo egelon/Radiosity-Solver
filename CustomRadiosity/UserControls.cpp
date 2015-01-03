@@ -1,6 +1,8 @@
 #include "UserControls.h"
 
 #include <glfw3.h>
+#include <ctime>
+
 extern GLFWwindow* window;
 
 UserControls::UserControls()
@@ -13,9 +15,11 @@ UserControls::UserControls()
 	mouseSpeed = 0.0005f;
 	windowWidth = 1024;
 	windowHeight = 768;
+	nearClippingPlane = 0.1f;
+	farClippingPlane = 100.0f;
 }
 
-UserControls::UserControls(int wW, int wH, glm::vec3 pos, float hAngle, float vAngle, float initFoV, float sp, float mSpeed) 
+UserControls::UserControls(int wW, int wH, glm::vec3 pos, float hAngle, float vAngle, float initFoV, float nearClip, float farClip, float sp, float mSpeed) 
 {
 	position = pos;
 	horizontalAngle = hAngle;
@@ -25,6 +29,8 @@ UserControls::UserControls(int wW, int wH, glm::vec3 pos, float hAngle, float vA
 	mouseSpeed = mSpeed;
 	windowWidth = wW;
 	windowHeight = wH;
+	nearClippingPlane = nearClip;
+	farClippingPlane = farClip;
 }
 
 glm::mat4 UserControls::getViewMatrix()
@@ -37,7 +43,7 @@ glm::mat4 UserControls::getProjectionMatrix()
 	return ProjectionMatrix;
 }
 
-void UserControls::computeMatricesFromInputs()
+void UserControls::computeMatricesFromInputs(Mesh* mesh)
 {
 	// glfwGetTime is called only once, the first time this function is called
 	static double lastTime = glfwGetTime();
@@ -95,10 +101,42 @@ void UserControls::computeMatricesFromInputs()
 		position -= right * deltaTime * speed;
 	}
 
-	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
+	//Subdivide
+	if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS)
+	{
+		if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_RELEASE)
+		{
+			mesh->Subdivide();
+			mesh->PrepareToDraw();
+		}
+	}
+
+	//Reset
+	if (glfwGetKey( window, GLFW_KEY_R ) == GLFW_PRESS)
+	{
+		if (glfwGetKey( window, GLFW_KEY_R ) == GLFW_RELEASE)
+		{
+			mesh->ResetMesh();
+			mesh->PrepareToDraw();
+		}
+	}
+
+	//dump to bitmap
+	if (glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS)
+	{
+		if (glfwGetKey( window, GLFW_KEY_D ) == GLFW_RELEASE)
+		{
+			time_t now = time(0);
+			string bmpName(to_string(now).append(".bmp"));
+			mesh->OutputToBitmap(bmpName, windowWidth, windowHeight);
+		}
+	}
 	
 	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	ProjectionMatrix = glm::perspective(FoV, 4.0f / 3.0f, 0.1f, 100.0f);
+	if(windowHeight == 0)
+		windowHeight = 1;
+	float windowRatio = (float)windowWidth / (float)windowHeight;
+	ProjectionMatrix = glm::perspective(initialFoV, windowRatio, nearClippingPlane, farClippingPlane);
 
 	// Camera matrix
 	ViewMatrix = glm::lookAt(

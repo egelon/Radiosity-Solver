@@ -52,7 +52,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;OM_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\lib\glm;$(ProjectDir)\lib\glfw\include;$(ProjectDir)\lib\glew\include;$(ProjectDir)\lib\freeglut\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\lib\glm;$(ProjectDir)\lib\glfw\include;$(ProjectDir)\lib\glew\include;$(ProjectDir)\lib\freeglut\include;$(ProjectDir)\lib\bitmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

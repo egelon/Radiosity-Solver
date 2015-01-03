@@ -15,143 +15,20 @@
 #include <regex>
 
 
+#include "bitmap_image.hpp"
 
 const string Mesh::vertexShaderFile = "shaders/MeshVertexShader.vert";
 const string Mesh::fragmentShaderFile = "shaders/MeshFragmentShader.frag";
 
 Mesh::Mesh()
 {
-	bbox = NULL;
+	
 }
 
 Mesh::~Mesh()
 {
-	delete bbox;
-	bbox = NULL;
+	
 }
-
-Vertex* Mesh::addVertex(const glm::vec3 &position)
-{
-	int index = numVertices();
-	Vertex *v = new Vertex(index, position);
-	vertices.push_back(v);
-	if (bbox == NULL) 
-		bbox = new BoundingBox(position,position);
-	else 
-		bbox->Extend(position);
-	return v;
-}
-
-HalfEdge* Mesh::getEdge(Vertex* a, Vertex* b) const
-{
-	for(int i=0; i<numHalfEdges(); i++)
-	{
-		//if there is such an edge, and it starts at a and ends at b, return it
-		if(	
-			(halfEdges[i] != NULL &&
-			halfEdges[i]->getVertex() != NULL &&
-			halfEdges[i]->getNext() != NULL &&
-			halfEdges[i]->getNext()->getVertex() != NULL)
-
-			&&
-			(halfEdges[i]->getVertex() == a && halfEdges[i]->getNext()->getVertex() == b)
-			)
-			return halfEdges[i];
-	}
-	return NULL;
-}
-
-void Mesh::addFace(Vertex *a, Vertex *b, Vertex *c, const glm::vec3& col, const glm::vec3& emit)
-{
-	//make the face
-	Face *newFace = new Face(col,emit);
-
-	//make the edges
-	HalfEdge* ea = new HalfEdge(a,newFace);
-	HalfEdge* eb = new HalfEdge(b,newFace);
-	HalfEdge* ec = new HalfEdge(c,newFace);
-
-	//point the face to the first one
-	newFace->setEdge(ea);
-
-	// connect the edges to each other
-	ea->setNext(eb);
-	eb->setNext(ec);
-	ec->setNext(ea);
-
-	// add them to the halfEdge array
-	halfEdges.push_back(ea);
-	halfEdges.push_back(eb);
-	halfEdges.push_back(ec);
-
-	//get each half edge's oppposite edge if it exists
-	HalfEdge* ea_opposite = getEdge(ea->getEndVertex(), ea->getVertex());
-	HalfEdge* eb_opposite = getEdge(eb->getEndVertex(), eb->getVertex());
-	HalfEdge* ec_opposite = getEdge(ec->getEndVertex(), ec->getVertex());
-
-	//connect each half edge to it's opposite
-	if (ea_opposite != NULL && ea_opposite != ea)
-	{
-		ea_opposite->clearOpposite();
-		ea_opposite->setOpposite(ea);
-	}
-	if (eb_opposite != NULL && eb_opposite != eb)
-	{
-		eb_opposite->clearOpposite();
-		eb_opposite->setOpposite(eb);
-	}
-	if (ec_opposite != NULL && ec_opposite != ec)
-	{
-		ec_opposite->clearOpposite();
-		ec_opposite->setOpposite(ec);
-	}
-
-	//add the face to the face array
-	faces.push_back(newFace);
-}
-
-void Mesh::removeFace(Face *f)
-{
-	//get the half-edges of the face
-	HalfEdge *ea = f->getEdge();
-	HalfEdge *eb = ea->getNext();
-	HalfEdge *ec = eb->getNext();
-
-	assert (ec->getNext() == ea);
-
-	// remove those edges
-	halfEdges.erase(remove(halfEdges.begin(), halfEdges.end(), ea), halfEdges.end());
-	halfEdges.erase(remove(halfEdges.begin(), halfEdges.end(), eb), halfEdges.end());
-	halfEdges.erase(remove(halfEdges.begin(), halfEdges.end(), ec), halfEdges.end());
-
-	//remove the face
-	faces.erase(remove(faces.begin(), faces.end(), f), faces.end());
-
-	// clean up memory
-	delete ea;
-	delete eb;
-	delete ec;
-	delete f;
-}
-
-int Mesh::numVertices() const { return vertices.size(); }
-int Mesh::numHalfEdges() const { return halfEdges.size(); }
-int Mesh::numFaces() const { return faces.size(); }
-
-Vertex* Mesh::getVertexByIndex(int index) const
-{
-	assert (index >= 0 && index < numVertices());
-	for(int i=0; i<numVertices(); i++)
-	{
-		assert (vertices[i] != NULL);
-		if (vertices[i]->getIndex() == index)
-			return vertices[i];
-	}
-}
-
-vector<Vertex*> Mesh::getVertices() const { return vertices; }
-vector<HalfEdge*> Mesh::getHalfEdges() const { return halfEdges; }
-vector<Face*> Mesh::getFaces() const { return faces; }
 
 vector<string> split(const string& s, const string& delim, const bool keep_empty = true)
 {
@@ -389,7 +266,7 @@ void Mesh::parseObject(ifstream& fileStream, SceneObject& currentObject)
 	}
 }
 
-void Mesh::LoadToArrays(string input_file)
+void Mesh::Load(string input_file)
 {
 	ifstream fileStream(input_file, ios::in);
 
@@ -435,344 +312,127 @@ void Mesh::LoadToArrays(string input_file)
 	fileStream.close();
 
 	sceneModel.erase(sceneModel.begin());
+
+	startingSceneModel = sceneModel;
 }
 
-void Mesh::LoadFromArrays()
+void Mesh::ResetMesh()
 {
-	//load all objects from the model
-	for(int i=0; i< sceneModel.size(); i++)
+	sceneModel = startingSceneModel;
+}
+
+
+
+//WORKING!!!
+void Mesh::Subdivide()
+{
+	for(int i=0; i<sceneModel.size(); i++)
 	{
-		//add all vertices of the object
-		for(int j=0; j<sceneModel[i].obj_model.vertices.size(); j++)
+		//for every scene object
+		ObjectModel* currentObject = &sceneModel[i].obj_model;
+		int currentObjFaces = currentObject->faces.size();
+		for(int j=0; j < currentObjFaces; j++)
 		{
-			addVertex(sceneModel[i].obj_model.vertices[j]);
-		}
-		//for each face, get all it's vertices and add the face to the mesh
-		for(int j=0; j<sceneModel[i].obj_model.faces.size(); j++)
-		{
-			ModelFace currentFace = sceneModel[i].obj_model.faces[j];
-			int numIndexes = currentFace.vertexIndexes.size();
+			//for every face of it
+			ModelFace* currentFace = &sceneModel[i].obj_model.faces[j];
 
-			Vertex* a = getVertexByIndex(currentFace.vertexIndexes[0]);
-			Vertex* b = getVertexByIndex(currentFace.vertexIndexes[1]);
-			Vertex* c = getVertexByIndex(currentFace.vertexIndexes[2]);
-			Vertex* d = NULL;
-
-			//FOR DEBUG
-			//float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-			//float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-			//float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-
-			glm::vec3 faceColor(currentFace.material->diffuseColor.r, currentFace.material->diffuseColor.g, currentFace.material->diffuseColor.b);
-			
-			glm::vec3 faceEmission;
-			if(currentFace.material->illuminationMode == COLOR) // if the face is a light source
-				faceEmission = glm::vec3(currentFace.material->diffuseColor.r, currentFace.material->diffuseColor.g, currentFace.material->diffuseColor.b);
-			else
-				faceEmission = glm::vec3(0.0, 0.0, 0.0);
-
-			addFace(a, b, c, faceColor, faceEmission);
-			if(numIndexes > 3)
+			if(currentFace->vertexIndexes.size() == 3) //our faces are triangles
 			{
-				d = getVertexByIndex(currentFace.vertexIndexes[3]);
-				addFace(a, c, d, faceColor, faceEmission);
+				//get the 3 vertices for the face
+				int index_a = currentFace->vertexIndexes[0];
+				int index_b = currentFace->vertexIndexes[1];
+				int index_c = currentFace->vertexIndexes[2];
+
+				glm::vec3 vertex_a = currentObject->vertices[index_a];
+				glm::vec3 vertex_b = currentObject->vertices[index_b];
+				glm::vec3 vertex_c = currentObject->vertices[index_c];
+
+				//calculate the medicenter of the face
+				glm::vec3 centroid (
+						(vertex_a.x + vertex_b.x + vertex_c.x) / 3.0f,
+						(vertex_a.y + vertex_b.y + vertex_c.y) / 3.0f,
+						(vertex_a.z + vertex_b.z + vertex_c.z) / 3.0f
+					);
+
+				//now add the 3 new faces-we add the centroid to the vertex array at the back and get it's index
+				currentObject->vertices.push_back(centroid);
+				int centroidIndex = currentObject->vertices.size() - 1;
+
+				Material* currentMaterial = currentFace->material;
+
+				//now we modify the current face's last vertex index to be the new centroid
+				currentFace->vertexIndexes[2] = centroidIndex; // a, b, centroid
+
+				//now we push the other 2 faces
+				ModelFace face_a;
+
+				face_a.material = currentMaterial;
+				face_a.vertexIndexes.push_back(index_b); //b, c, centroid
+				face_a.vertexIndexes.push_back(index_c);
+				face_a.vertexIndexes.push_back(centroidIndex);
+
+				currentObject->faces.push_back(face_a);
+
+				ModelFace face_b;
+
+				face_b.material = currentMaterial;
+				face_b.vertexIndexes.push_back(index_c); //c, a, centroid
+				face_b.vertexIndexes.push_back(index_a);
+				face_b.vertexIndexes.push_back(centroidIndex);
+
+				currentObject->faces.push_back(face_b);
+			}
+			else if(currentFace->vertexIndexes.size() > 3) //we got quads
+			{
+				return;
 			}
 		}
 	}
 }
 
-void Mesh::Load(string input_file)
-{
-	LoadToArrays(input_file);
-	LoadFromArrays();
-}
-/*
-void Mesh::Subdivide()
-{
-	vector<Face*> startingFaces = faces;
-	int numStartingFaces = startingFaces.size();
-
-	for(int i=0; i<numStartingFaces; i++)
-	{
-		Face* currentFace = startingFaces[i];
-		//for every face, get the 3 vertices, add a new vertex at their centroid, then delete the old face and add the 3 new ones
-
-		//first get the centroid
-		glm::vec3 centroid = faces[i]->getCentroid();
-
-		//make a new vertex with that position
-		Vertex* center = new Vertex(numVertices(), centroid);
-
-		//add it to the back of the vertex array
-		vertices.push_back(center);
-
-		//then get the current face's 3 other vertices
-		Vertex* a = (*faces[i])[0];
-		Vertex* b = (*faces[i])[1];
-		Vertex* c = (*faces[i])[2];
-
-		//and the color and emission
-		glm::vec3 color = faces[i]->getColor();
-		glm::vec3 emission = faces[i]->getEmission();
-
-
-		removeFace(faces[i]);
-
-		//add the 3 new faces
-		addFace(a, b, center, color, emission);
-		addFace(b, c, center, color, emission);
-		addFace(c, a, center, color, emission);
-	}
-}
-*/
-
-//WORKING!!!
-void Mesh::Subdivide()
-{
-	vector<Face*> startingFaces;
-	startingFaces.resize(faces.size());
-	for(int i=0; i<faces.size(); i++)
-	{
-		startingFaces[i] = faces[i]->Clone();
-	}
-	int numStartingFaces = startingFaces.size();
-
-	for(int i=0; i<numStartingFaces; i++)
-	{
-		//for every face, get the 3 vertices, add a new vertex at their centroid, then delete the old face and add the 3 new ones
-
-		//first get the centroid
-		glm::vec3 centroid = startingFaces[i]->getCentroid();
-
-		//make a new vertex with that position
-		Vertex* center = new Vertex(numVertices(), centroid);
-
-		//add it to the back of the vertex array
-		vertices.push_back(center);
-
-		//then get the current face's 3 other vertices
-		Vertex* a = getVertexByIndex((*startingFaces[i])[0]->getIndex());
-		Vertex* b = getVertexByIndex((*startingFaces[i])[1]->getIndex());
-		Vertex* c = getVertexByIndex((*startingFaces[i])[2]->getIndex());
-
-		//and the color and emission
-		glm::vec3 color = startingFaces[i]->getColor();
-		glm::vec3 emission = startingFaces[i]->getEmission();
-		
-		removeFace(faces[i]);
-
-		//add the 3 new faces
-		addFace(a, b, center, color, emission);
-		addFace(b, c, center, color, emission);
-		addFace(c, a, center, color, emission);
-
-		//delete the old one
-		//removeFace(faces[i]);
-	}
-}
-
-
-void Mesh::cacheVertexPositions()
-{
-	vertex_positions.clear();
-	for(int i=0; i<vertices.size(); i++)
-	{
-		vertex_positions.push_back(vertices[i]->x());
-		vertex_positions.push_back(vertices[i]->y());
-		vertex_positions.push_back(vertices[i]->z());
-	}
-}
-
-void Mesh::cacheFaceIndexes()
-{
-	face_indexes.clear();
-	for(int i=0; i< faces.size(); i++)
-	{
-		HalfEdge* startEdge = faces[i]->getEdge();
-		Vertex* start = startEdge->getVertex();
-
-		face_indexes.push_back(start->getIndex());
-
-		HalfEdge* currentEdge = startEdge->getNext();
-		while(currentEdge->getVertex() != start)
-		{
-			face_indexes.push_back(currentEdge->getVertex()->getIndex());
-			currentEdge = currentEdge->getNext();
-		}
-	}
-}
-
-bool HasIndexBeenAdded(vector<int>& indexes, int current)
-{
-	if(indexes.empty())
-		return false;
-	for(int i=0; i<indexes.size(); i++)
-		if(current == indexes[i])
-			return true;
-	return false;
-}
-
 void Mesh::cacheVerticesFacesAndColors()
 {
 	vertex_positions.clear();
-	//vertex_positions.resize(faces.size() * 3);
-
 	face_indexes.clear();
-
 	vertex_colors.clear();
-	//vertex_colors.resize(vertex_positions.size());
-
-	int lastMeshVertexIndex = vertices.size();
-
-	vector<int> alreadyAddedIndexes;
-
-	for(int i=0; i< faces.size(); i++)
+	
+	for(int i=0; i<sceneModel.size(); i++)
 	{
-		HalfEdge* startEdge = faces[i]->getEdge();
-		Vertex* start = startEdge->getVertex();
-		glm::vec3 currentColor = faces[i]->getColor();
-
-		vertex_positions.push_back(start->x());
-		vertex_positions.push_back(start->y());
-		vertex_positions.push_back(start->z());
-
-		face_indexes.push_back((vertex_positions.size() / 3) - 1);
-
-		vertex_colors.push_back(currentColor.r);
-		vertex_colors.push_back(currentColor.g);
-		vertex_colors.push_back(currentColor.b);
-
-		HalfEdge* currentEdge = startEdge->getNext();
-		while(currentEdge->getVertex() != start)
+		//for every scene object
+		for(int j=0; j<sceneModel[i].obj_model.faces.size(); j++)
 		{
-			Vertex* currentVertex = currentEdge->getVertex();
-			
-			vertex_positions.push_back(currentVertex->x());
-			vertex_positions.push_back(currentVertex->y());
-			vertex_positions.push_back(currentVertex->z());
+			//for every face of it
+			ModelFace currentFace = sceneModel[i].obj_model.faces[j];
+			for(int k=0; k<currentFace.vertexIndexes.size(); k++)
+			{
+				glm::vec3 currentVertex = sceneModel[i].obj_model.vertices[currentFace.vertexIndexes[k]];
 
-			face_indexes.push_back((vertex_positions.size() / 3) - 1);
+				vertex_positions.push_back(currentVertex.x);
+				vertex_positions.push_back(currentVertex.y);
+				vertex_positions.push_back(currentVertex.z);
 
-			vertex_colors.push_back(currentColor.r);
-			vertex_colors.push_back(currentColor.g);
-			vertex_colors.push_back(currentColor.b);
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
-			currentEdge = currentEdge->getNext();
+				//FOR DEBUG
+				
+				float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+				float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+				float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+				glm::vec3 currentColor(color_r, color_g, color_b);
+				
+				//glm::vec3 currentColor = currentFace.material->diffuseColor;
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+			}
 		}
-	}
-/*
-		if(HasIndexBeenAdded(alreadyAddedIndexes, currentIndex))
-		{
-			currentIndex += lastMeshVertexIndex;
-		}
-		alreadyAddedIndexes.push_back(currentIndex);
-
-		//cache start vertex
-		vertex_positions[currentIndex * 3] = start->x();
-		vertex_positions[currentIndex * 3 + 1] = start->y();
-		vertex_positions[currentIndex * 3 + 2] = start->z();
-
-		//cache starting face index
-		face_indexes.push_back(currentIndex);
-		//face_indexes.push_back(vertex_positions.size() - 3);
-
-		//cache the color
-		vertex_colors[currentIndex * 3] = currentColor.r;
-		vertex_colors[currentIndex * 3 + 1] = currentColor.g;
-		vertex_colors[currentIndex * 3 + 2] = currentColor.b;
-
-		HalfEdge* currentEdge = startEdge->getNext();
-		while(currentEdge->getVertex() != start)
-		{
-			Vertex* currentVertex = currentEdge->getVertex();
-			currentIndex = currentVertex->getIndex();
-
-			//cache start vertex
-			vertex_positions[currentIndex * 3] = currentVertex->x();
-			vertex_positions[currentIndex * 3 + 1] = currentVertex->y();
-			vertex_positions[currentIndex * 3 + 2] = currentVertex->z();
-
-			//cache starting face index
-			face_indexes.push_back(currentIndex);
-			//face_indexes.push_back(vertex_positions.size() - 3);
-
-			//cache the color
-			vertex_colors[currentIndex * 3] = currentColor.r;
-			vertex_colors[currentIndex * 3 + 1] = currentColor.g;
-			vertex_colors[currentIndex * 3 + 2] = currentColor.b;
-
-			currentEdge = currentEdge->getNext();
-		}
-	}
-	*/
-}
-
-//WARNING! Call this last!!!
-void Mesh::cacheVertexColors()
-{
-	vertex_colors.clear();
-	vertex_colors.resize(face_indexes.size());
-	for(int i=0; i<face_indexes.size(); i+= 3)
-	{
-		glm::vec3 faceColor = faces[i/3]->getColor();
-		
-		int index_a = face_indexes[i];
-		int index_b = face_indexes[i+1];
-		int index_c = face_indexes[i+2];
-
-		vertex_colors[index_a] = faceColor.r;
-		vertex_colors[index_a+1] = faceColor.g;
-		vertex_colors[index_a+2] = faceColor.b;
-
-		vertex_colors[index_b] = faceColor.r;
-		vertex_colors[index_b+1] = faceColor.g;
-		vertex_colors[index_b+2] = faceColor.b;
-
-		vertex_colors[index_c] = faceColor.r;
-		vertex_colors[index_c+1] = faceColor.g;
-		vertex_colors[index_c+2] = faceColor.b;
 	}
 }
 
 void Mesh::DrawWireframe()
 {
-	glm::vec3 center = bbox->getCenter();
-	float s = 1.0/bbox->maxDim();
-
-	glScalef(s,s,s);
-	glTranslatef(-center.x,-center.y,-center.z);
-
-	// this offset prevents "z-fighting" bewteen the edges and faces
-	// the edges will always win.
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(1.1,4.0);
-
 	
-		// for all other visualizations, just render the patch in a uniform color
-		glEnable(GL_LIGHTING);
-		glBegin (GL_LINES);
-		for (int i = 0; i < numFaces(); i++)
-		{
-			Face *f = faces[i];
-			glm::vec3 color = f->getColor();
-			
-			glColor3f(color.x, color.y, color.z);
-			glm::vec3 a = (*f)[0]->getPosition();
-			glm::vec3 b = (*f)[1]->getPosition();
-			glm::vec3 c = (*f)[2]->getPosition();
-			
-			glVertex3f(a.x,a.y,a.z);
-			glVertex3f(b.x,b.y,b.z);
-			glVertex3f(c.x,c.y,c.z);
-		}
-		glEnd();
-		
-	
-		
-
-	glDisable(GL_POLYGON_OFFSET_FILL); 
-	 
-
 }
 
 GLuint Mesh::LoadShaders()
@@ -783,10 +443,6 @@ GLuint Mesh::LoadShaders()
 
 void Mesh::PrepareToDraw()
 {
-	//cacheVertexPositions();
-	//cacheFaceIndexes();
-	//cacheVertexColors();
-
 	cacheVerticesFacesAndColors();
 
 	//create a vertex buffer
@@ -807,14 +463,6 @@ void Mesh::PrepareToDraw()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferID);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_indexes.size() * sizeof(GLuint), &face_indexes[0], GL_STATIC_DRAW);
 
-}
-
-void Mesh::Cleanup()
-{
-	glDeleteBuffers(1, &vertexBufferID);
-	glDeleteBuffers(1, &colorBufferID);
-	glDeleteBuffers(1, &elementBufferID);
-	glDeleteProgram(shaderProgramID);
 }
 
 void Mesh::Draw()
@@ -884,4 +532,40 @@ void Mesh::Draw()
 	glDisableVertexAttribArray(vertexPosition_modelspaceID);
 	glDisableVertexAttribArray(vertexColorID);
 
+}
+
+void Mesh::Cleanup()
+{
+	glDeleteBuffers(1, &vertexBufferID);
+	glDeleteBuffers(1, &colorBufferID);
+	glDeleteBuffers(1, &elementBufferID);
+	glDeleteProgram(shaderProgramID);
+}
+
+void Mesh::OutputToBitmap(string bmpName, int width, int height)
+{
+	unsigned char* red_channel = new unsigned char[width*height];
+	unsigned char* green_channel = new unsigned char[width*height];
+	unsigned char* blue_channel = new unsigned char[width*height];
+	if(red_channel == NULL || green_channel == NULL || blue_channel == NULL)
+	{
+		printf("Could not allocate memory for image %s\n", bmpName);
+		return;
+	}
+
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glReadBuffer(GL_FRONT);
+
+	glReadPixels(0, 0, (GLsizei)width, (GLsizei)height, GL_RED, GL_UNSIGNED_BYTE, red_channel);
+	glReadPixels(0, 0, (GLsizei)width, (GLsizei)height, GL_GREEN, GL_UNSIGNED_BYTE, green_channel);
+	glReadPixels(0, 0, (GLsizei)width, (GLsizei)height, GL_BLUE, GL_UNSIGNED_BYTE, blue_channel);
+
+
+	bitmap_image image(width, height);
+
+	//image.bgr_to_rgb();
+
+	image.import_rgb(red_channel, green_channel, blue_channel);
+
+	image.save_image(bmpName);
 }

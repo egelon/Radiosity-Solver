@@ -1,44 +1,10 @@
-﻿Build started 1/3/2015 12:51:35 AM.
+﻿Build started 1/3/2015 9:20:27 PM.
      1>Project "E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\CustomRadiosity.vcxproj" on node 2 (Build target(s)).
      1>InitializeBuildStatus:
          Creating "Debug\CustomRadiosity.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
-         C:\Program Files (x86)\VC\bin\CL.exe /c /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glm /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glfw\include /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glew\include /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\freeglut\include /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D OM_STATIC_BUILD /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Mesh.cpp
-         Mesh.cpp
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\halfedge.h(12): warning C4099: 'HalfEdge' : type name first seen using 'class' now seen using 'struct'
-                 e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\face.h(7) : see declaration of 'HalfEdge'
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(184): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(203): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(235): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(243): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(313): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(314): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(317): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(353): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(366): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(379): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(443): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(446): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(451): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(534): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(578): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(580): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(581): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(582): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(589): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(609): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(629): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(635): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(636): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(637): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(650): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(651): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(652): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(715): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(740): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(748): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(150): warning C4715: 'Mesh::getVertexByIndex' : not all control paths return a value
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(187): warning C4715: 'Mesh::getMaterialPtrByName' : not all control paths return a value
+         C:\Program Files (x86)\VC\bin\CL.exe /c /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glm /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glfw\include /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glew\include /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\freeglut\include /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\bitmap /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D OM_STATIC_BUILD /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
+         main.cpp
        Link:
          C:\Program Files (x86)\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\Dropbox\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.exe" /INCREMENTAL /NOLOGO /LIBPATH:E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\freeglut\lib\x86\Debug /LIBPATH:"E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glfw\lib-msvc110" /LIBPATH:E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glew\lib\Release\Win32 opengl32.lib glu32.lib glew32.lib glfw3.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\Dropbox\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\Dropbox\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.lib" /MACHINE:X86 Debug\BoundingBox.obj
          Debug\Face.obj
@@ -55,4 +21,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:02.15
+Time Elapsed 00:00:01.30

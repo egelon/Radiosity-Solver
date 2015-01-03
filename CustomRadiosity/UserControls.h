@@ -1,6 +1,7 @@
 #ifndef USER_CONTROLS_H
 #define USER_CONTROLS_H
 
+#include "Mesh.h"
 #include <glm/vec3.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -8,8 +9,8 @@ class UserControls
 {
 	public:
 	UserControls();
-	UserControls(int wW, int wH, glm::vec3 pos, float hAngle, float vAngle, float initFoV, float speed, float mouseSpeed);
-	void computeMatricesFromInputs();
+	UserControls(int wW, int wH, glm::vec3 pos, float hAngle, float vAngle, float initFoV, float nearClip, float farClip, float speed, float mouseSpeed);
+	void computeMatricesFromInputs(Mesh* mesh);
 	glm::mat4 getViewMatrix();
 	glm::mat4 getProjectionMatrix();
 
@@ -31,6 +32,9 @@ class UserControls
 
 	int windowWidth;
 	int windowHeight;
+
+	float nearClippingPlane;
+	float farClippingPlane;
 };
 
 #endif
