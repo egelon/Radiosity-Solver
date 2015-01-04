@@ -39,13 +39,13 @@ public:
 
 	void SetMVP(glm::mat4 mvp){ ModelViewProjectionMatrix = mvp; }
 
-
 	vector<GLfloat> GLF_getVertexPositions() { return vertex_positions; };
 	vector<GLfloat> GLF_getVertexColors() { return vertex_colors; };
 	vector<GLuint> GLUI_getFaceIndexes() { return face_indexes; };
 	vector<GLfloat> GLF_getFaceNormals() { return face_normals; };
 
 	void cacheVerticesFacesAndColors();
+	void cacheVerticesFacesAndColors_Radiosity();
 
 
 private:
@@ -60,7 +60,9 @@ private:
 	vector<GLuint> face_indexes;
 	vector<GLfloat> face_normals;
 
+public:	
 	vector<SceneObject> sceneModel;
+private:	
 	vector<SceneObject> startingSceneModel;
 
 	vector<Material> materials;

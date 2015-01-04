@@ -9,6 +9,8 @@ struct ModelFace
 	vector<GLuint> textureIndexes;
 	vector<GLuint> normalIndexes;
 	Material* material;
+
+	float intensity;
 };
 
 #endif

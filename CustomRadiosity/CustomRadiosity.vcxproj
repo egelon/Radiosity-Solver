@@ -81,27 +81,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BoundingBox.cpp" />
-    <ClCompile Include="Face.cpp" />
-    <ClCompile Include="HalfEdge.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Radiosity.cpp" />
     <ClCompile Include="ShaderLoader.cpp" />
     <ClCompile Include="UserControls.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BoundingBox.h" />
-    <ClInclude Include="Face.h" />
     <ClInclude Include="functions.h" />
-    <ClInclude Include="HalfEdge.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="ModelFace.h" />
     <ClInclude Include="ObjectModel.h" />
+    <ClInclude Include="Radiosity.h" />
+    <ClInclude Include="RadiosityFace.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="ShaderLoader.h" />
     <ClInclude Include="UserControls.h" />
-    <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

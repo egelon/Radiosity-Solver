@@ -43,7 +43,7 @@ glm::mat4 UserControls::getProjectionMatrix()
 	return ProjectionMatrix;
 }
 
-void UserControls::computeMatricesFromInputs(Mesh* mesh)
+void UserControls::computeMatricesFromInputs(Mesh* mesh, Radiosity* radiosity)
 {
 	// glfwGetTime is called only once, the first time this function is called
 	static double lastTime = glfwGetTime();
@@ -107,6 +107,7 @@ void UserControls::computeMatricesFromInputs(Mesh* mesh)
 		if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_RELEASE)
 		{
 			mesh->Subdivide();
+			mesh->cacheVerticesFacesAndColors();
 			mesh->PrepareToDraw();
 		}
 	}
@@ -117,6 +118,20 @@ void UserControls::computeMatricesFromInputs(Mesh* mesh)
 		if (glfwGetKey( window, GLFW_KEY_R ) == GLFW_RELEASE)
 		{
 			mesh->ResetMesh();
+			mesh->cacheVerticesFacesAndColors();
+			mesh->PrepareToDraw();
+		}
+	}
+
+	//Radiosity
+	if (glfwGetKey( window, GLFW_KEY_I ) == GLFW_PRESS)
+	{
+		if (glfwGetKey( window, GLFW_KEY_I ) == GLFW_RELEASE)
+		{
+			radiosity->loadSceneFacesFromMesh(mesh);
+			radiosity->calculateRadiosityValues();
+			radiosity->setMeshFaceColors();
+			mesh->cacheVerticesFacesAndColors_Radiosity();
 			mesh->PrepareToDraw();
 		}
 	}

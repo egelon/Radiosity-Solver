@@ -1,9 +1,5 @@
 #include "Mesh.h"
-
-
-
 #include <glm/gtc/matrix_transform.hpp>
-
 
 #include <algorithm>
 #include <iostream>
@@ -321,9 +317,6 @@ void Mesh::ResetMesh()
 	sceneModel = startingSceneModel;
 }
 
-
-
-//WORKING!!!
 void Mesh::Subdivide()
 {
 	for(int i=0; i<sceneModel.size(); i++)
@@ -335,6 +328,8 @@ void Mesh::Subdivide()
 		{
 			//for every face of it
 			ModelFace* currentFace = &sceneModel[i].obj_model.faces[j];
+
+			Material* currentMaterial = currentFace->material;
 
 			if(currentFace->vertexIndexes.size() == 3) //our faces are triangles
 			{
@@ -348,17 +343,11 @@ void Mesh::Subdivide()
 				glm::vec3 vertex_c = currentObject->vertices[index_c];
 
 				//calculate the medicenter of the face
-				glm::vec3 centroid (
-						(vertex_a.x + vertex_b.x + vertex_c.x) / 3.0f,
-						(vertex_a.y + vertex_b.y + vertex_c.y) / 3.0f,
-						(vertex_a.z + vertex_b.z + vertex_c.z) / 3.0f
-					);
+				glm::vec3 centroid = currentObject->getFaceCentroid(j);
 
 				//now add the 3 new faces-we add the centroid to the vertex array at the back and get it's index
 				currentObject->vertices.push_back(centroid);
 				int centroidIndex = currentObject->vertices.size() - 1;
-
-				Material* currentMaterial = currentFace->material;
 
 				//now we modify the current face's last vertex index to be the new centroid
 				currentFace->vertexIndexes[2] = centroidIndex; // a, b, centroid
@@ -382,8 +371,251 @@ void Mesh::Subdivide()
 
 				currentObject->faces.push_back(face_b);
 			}
-			else if(currentFace->vertexIndexes.size() > 3) //we got quads
+			else if(currentFace->vertexIndexes.size() == 4) //we got quads
 			{
+				//get the 4 vertices for the face
+				int index_a = currentFace->vertexIndexes[0];
+				int index_b = currentFace->vertexIndexes[1];
+				int index_c = currentFace->vertexIndexes[2];
+				int index_d = currentFace->vertexIndexes[3];
+
+				glm::vec3 vertex_a = currentObject->vertices[index_a];
+				glm::vec3 vertex_b = currentObject->vertices[index_b];
+				glm::vec3 vertex_c = currentObject->vertices[index_c];
+				glm::vec3 vertex_d = currentObject->vertices[index_d];
+
+				//calculate the medicenter of the face
+				glm::vec3 centroid = currentObject->getFaceCentroid(j);
+
+				glm::vec3 vertex_ab( 
+						(vertex_a.x + vertex_b.x) / 2.0f,
+						(vertex_a.y + vertex_b.y) / 2.0f,
+						(vertex_a.z + vertex_b.z) / 2.0f
+					);
+
+				glm::vec3 vertex_bc( 
+						(vertex_b.x + vertex_c.x) / 2.0f,
+						(vertex_b.y + vertex_c.y) / 2.0f,
+						(vertex_b.z + vertex_c.z) / 2.0f
+					);
+
+				glm::vec3 vertex_cd( 
+						(vertex_c.x + vertex_d.x) / 2.0f,
+						(vertex_c.y + vertex_d.y) / 2.0f,
+						(vertex_c.z + vertex_d.z) / 2.0f
+					);
+
+				glm::vec3 vertex_da( 
+						(vertex_d.x + vertex_a.x) / 2.0f,
+						(vertex_d.y + vertex_a.y) / 2.0f,
+						(vertex_d.z + vertex_a.z) / 2.0f
+					);
+				
+
+				currentObject->vertices.push_back(centroid);
+				int centroidIndex = currentObject->vertices.size() - 1;
+
+				currentObject->vertices.push_back(vertex_ab);
+				int abIndex = currentObject->vertices.size() - 1;
+				currentObject->vertices.push_back(vertex_bc);
+				int bcIndex = currentObject->vertices.size() - 1;
+				currentObject->vertices.push_back(vertex_cd);
+				int cdIndex = currentObject->vertices.size() - 1;
+				currentObject->vertices.push_back(vertex_da);
+				int daIndex = currentObject->vertices.size() - 1;
+
+
+				currentFace->vertexIndexes[1] = abIndex;
+				currentFace->vertexIndexes[2] = centroidIndex;
+				currentFace->vertexIndexes[3] = daIndex;
+
+				ModelFace face_a;
+				face_a.material = currentMaterial;
+				face_a.vertexIndexes.push_back(abIndex);
+				face_a.vertexIndexes.push_back(index_b);
+				face_a.vertexIndexes.push_back(bcIndex);
+				face_a.vertexIndexes.push_back(centroidIndex);
+
+				currentObject->faces.push_back(face_a);
+
+				ModelFace face_b;
+				face_b.material = currentMaterial;
+				face_b.vertexIndexes.push_back(centroidIndex);
+				face_b.vertexIndexes.push_back(bcIndex);
+				face_b.vertexIndexes.push_back(index_c);
+				face_b.vertexIndexes.push_back(cdIndex);
+
+				currentObject->faces.push_back(face_b);
+
+				ModelFace face_c;
+				face_c.material = currentMaterial;
+				face_c.vertexIndexes.push_back(daIndex);
+				face_c.vertexIndexes.push_back(centroidIndex);
+				face_c.vertexIndexes.push_back(cdIndex);
+				face_c.vertexIndexes.push_back(index_d);
+
+				currentObject->faces.push_back(face_c);
+			}
+			else
+			{
+				printf("Can't subdivide: faces are neither triangles, nor quads.\n");
+				return;
+			}
+		}
+	}
+}
+
+void Mesh::cacheVerticesFacesAndColors_Radiosity()
+{
+	vertex_positions.clear();
+	face_indexes.clear();
+	vertex_colors.clear();
+
+	for(int i=0; i<sceneModel.size(); i++)
+	{
+		//for every scene object
+		for(int j=0; j<sceneModel[i].obj_model.faces.size(); j++)
+		{
+			//for every face of it
+			ModelFace currentFace = sceneModel[i].obj_model.faces[j];
+
+			//FOR DEBUG
+			/*
+			float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			glm::vec3 currentColor(color_r, color_g, color_b);
+			*/
+			glm::vec3 currentColor = currentFace.material->diffuseColor;
+			float intensity = currentFace.intensity;
+
+			currentColor *= intensity;
+			if(currentFace.vertexIndexes.size() == 3) //we have triangles
+			{
+				int index_a = currentFace.vertexIndexes[0];
+				int index_b = currentFace.vertexIndexes[1];
+				int index_c = currentFace.vertexIndexes[2];
+
+				glm::vec3 vertex_a = sceneModel[i].obj_model.vertices[index_a];
+				glm::vec3 vertex_b = sceneModel[i].obj_model.vertices[index_b];
+				glm::vec3 vertex_c = sceneModel[i].obj_model.vertices[index_c];
+
+				//push a
+				vertex_positions.push_back(vertex_a.x);
+				vertex_positions.push_back(vertex_a.y);
+				vertex_positions.push_back(vertex_a.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//push b
+				vertex_positions.push_back(vertex_b.x);
+				vertex_positions.push_back(vertex_b.y);
+				vertex_positions.push_back(vertex_b.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//push c
+				vertex_positions.push_back(vertex_c.x);
+				vertex_positions.push_back(vertex_c.y);
+				vertex_positions.push_back(vertex_c.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+			}
+			else if(currentFace.vertexIndexes.size() == 4) //we have quads
+			{
+				int index_a = currentFace.vertexIndexes[0];
+				int index_b = currentFace.vertexIndexes[1];
+				int index_c = currentFace.vertexIndexes[2];
+				int index_d = currentFace.vertexIndexes[3];
+
+				glm::vec3 vertex_a = sceneModel[i].obj_model.vertices[index_a];
+				glm::vec3 vertex_b = sceneModel[i].obj_model.vertices[index_b];
+				glm::vec3 vertex_c = sceneModel[i].obj_model.vertices[index_c];
+				glm::vec3 vertex_d = sceneModel[i].obj_model.vertices[index_d];
+
+				//push a
+				vertex_positions.push_back(vertex_a.x);
+				vertex_positions.push_back(vertex_a.y);
+				vertex_positions.push_back(vertex_a.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//push b
+				vertex_positions.push_back(vertex_b.x);
+				vertex_positions.push_back(vertex_b.y);
+				vertex_positions.push_back(vertex_b.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//push d
+				vertex_positions.push_back(vertex_d.x);
+				vertex_positions.push_back(vertex_d.y);
+				vertex_positions.push_back(vertex_d.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//==========================================================
+
+				//push b
+				vertex_positions.push_back(vertex_b.x);
+				vertex_positions.push_back(vertex_b.y);
+				vertex_positions.push_back(vertex_b.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//push c
+				vertex_positions.push_back(vertex_c.x);
+				vertex_positions.push_back(vertex_c.y);
+				vertex_positions.push_back(vertex_c.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//push d
+				vertex_positions.push_back(vertex_d.x);
+				vertex_positions.push_back(vertex_d.y);
+				vertex_positions.push_back(vertex_d.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+			}
+			else
+			{
+				printf("Model doesn't have triangles or quads. Can't process\n");
 				return;
 			}
 		}
@@ -403,28 +635,143 @@ void Mesh::cacheVerticesFacesAndColors()
 		{
 			//for every face of it
 			ModelFace currentFace = sceneModel[i].obj_model.faces[j];
-			for(int k=0; k<currentFace.vertexIndexes.size(); k++)
-			{
-				glm::vec3 currentVertex = sceneModel[i].obj_model.vertices[currentFace.vertexIndexes[k]];
 
-				vertex_positions.push_back(currentVertex.x);
-				vertex_positions.push_back(currentVertex.y);
-				vertex_positions.push_back(currentVertex.z);
+			//FOR DEBUG
+			/*
+			float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			glm::vec3 currentColor(color_r, color_g, color_b);
+			*/
+			glm::vec3 currentColor = currentFace.material->diffuseColor;
+
+			if(currentFace.vertexIndexes.size() == 3) //we have triangles
+			{
+				int index_a = currentFace.vertexIndexes[0];
+				int index_b = currentFace.vertexIndexes[1];
+				int index_c = currentFace.vertexIndexes[2];
+
+				glm::vec3 vertex_a = sceneModel[i].obj_model.vertices[index_a];
+				glm::vec3 vertex_b = sceneModel[i].obj_model.vertices[index_b];
+				glm::vec3 vertex_c = sceneModel[i].obj_model.vertices[index_c];
+
+				//push a
+				vertex_positions.push_back(vertex_a.x);
+				vertex_positions.push_back(vertex_a.y);
+				vertex_positions.push_back(vertex_a.z);
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
-
-				//FOR DEBUG
-				
-				float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-				float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-				float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-				glm::vec3 currentColor(color_r, color_g, color_b);
-				
-				//glm::vec3 currentColor = currentFace.material->diffuseColor;
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
 				vertex_colors.push_back(currentColor.b);
+
+				//push b
+				vertex_positions.push_back(vertex_b.x);
+				vertex_positions.push_back(vertex_b.y);
+				vertex_positions.push_back(vertex_b.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//push c
+				vertex_positions.push_back(vertex_c.x);
+				vertex_positions.push_back(vertex_c.y);
+				vertex_positions.push_back(vertex_c.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+			}
+			else if(currentFace.vertexIndexes.size() == 4) //we have quads
+			{
+				int index_a = currentFace.vertexIndexes[0];
+				int index_b = currentFace.vertexIndexes[1];
+				int index_c = currentFace.vertexIndexes[2];
+				int index_d = currentFace.vertexIndexes[3];
+
+				glm::vec3 vertex_a = sceneModel[i].obj_model.vertices[index_a];
+				glm::vec3 vertex_b = sceneModel[i].obj_model.vertices[index_b];
+				glm::vec3 vertex_c = sceneModel[i].obj_model.vertices[index_c];
+				glm::vec3 vertex_d = sceneModel[i].obj_model.vertices[index_d];
+
+				//push a
+				vertex_positions.push_back(vertex_a.x);
+				vertex_positions.push_back(vertex_a.y);
+				vertex_positions.push_back(vertex_a.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//push b
+				vertex_positions.push_back(vertex_b.x);
+				vertex_positions.push_back(vertex_b.y);
+				vertex_positions.push_back(vertex_b.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//push d
+				vertex_positions.push_back(vertex_d.x);
+				vertex_positions.push_back(vertex_d.y);
+				vertex_positions.push_back(vertex_d.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//==========================================================
+
+				//push b
+				vertex_positions.push_back(vertex_b.x);
+				vertex_positions.push_back(vertex_b.y);
+				vertex_positions.push_back(vertex_b.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//push c
+				vertex_positions.push_back(vertex_c.x);
+				vertex_positions.push_back(vertex_c.y);
+				vertex_positions.push_back(vertex_c.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+				//push d
+				vertex_positions.push_back(vertex_d.x);
+				vertex_positions.push_back(vertex_d.y);
+				vertex_positions.push_back(vertex_d.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+			}
+			else
+			{
+				printf("Model doesn't have triangles or quads. Can't process\n");
+				return;
 			}
 		}
 	}
@@ -443,7 +790,7 @@ GLuint Mesh::LoadShaders()
 
 void Mesh::PrepareToDraw()
 {
-	cacheVerticesFacesAndColors();
+	//cacheVerticesFacesAndColors();
 
 	//create a vertex buffer
 	glGenBuffers(1, &vertexBufferID);
