@@ -148,7 +148,7 @@ public:
 private:
 	void DefaultValues()
 	{
-		sceneName = "test_quads.obj";
+		sceneName = "untitled_quads.obj";
 		windowWidth = 1024;
 		windowHeight = 768;
 		cameraPosition = glm::vec3( 0, 0, 5 );
