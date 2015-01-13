@@ -32,10 +32,13 @@ public:
 	void Cleanup();
 	void Draw();
 
+	vector<ModelFace*> GetFaceIndexesFromVertexIndex(int modelIndex, int vertIndex);
+
 	void OutputToBitmap(string bmpName, int width, int height);
 
 
-	GLuint LoadShaders();
+	GLuint LoadDefaultShaders();
+	GLuint LoadGouraudShaders();
 
 	void SetMVP(glm::mat4 mvp){ ModelViewProjectionMatrix = mvp; }
 
@@ -50,7 +53,7 @@ public:
 
 private:
 
-	void parseObject(ifstream& fileStream, SceneObject& currentObject);
+	void parseObject(ifstream& fileStream, SceneObject& currentObject, int totalVertexCount);
 
 	void parseMaterials(string materialsFileName);
 	Material* getMaterialPtrByName(string matName);
@@ -68,9 +71,6 @@ private:
 	vector<Material> materials;
 
 	glm::mat4 ModelViewProjectionMatrix;
-
-	static const string vertexShaderFile;
-	static const string fragmentShaderFile;
 
 	ShaderLoader shaderLoader;
 

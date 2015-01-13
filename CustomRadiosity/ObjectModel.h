@@ -86,7 +86,8 @@ struct ObjectModel
 		glm::vec3 vertex_b = vertices[index_b];
 		glm::vec3 vertex_c = vertices[index_c];
 
-		return glm::triangleNormal(vertex_a, vertex_b, vertex_c);
+		//return glm::triangleNormal(vertex_a, vertex_b, vertex_c);
+		return glm::normalize(glm::cross( (vertex_b - vertex_a), (vertex_c - vertex_a) ));
 	}
 
 	glm::vec3 getFaceCentroid(int faceIndex)
@@ -176,7 +177,7 @@ struct ObjectModel
 			glm::vec3 vertex_c = vertices[index_c];
 			glm::vec3 vertex_d = vertices[index_d];
 
-			for(int i=0; i<count; i++)
+			for(int i=0; i<count/2; i++)
 			{
 				float r1 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
 				float r2 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));

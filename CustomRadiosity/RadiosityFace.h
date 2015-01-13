@@ -7,9 +7,9 @@ struct RadiosityFace
 {
 	ObjectModel* model;
 	int faceIndex;
-	glm::vec3 totalRadiosity;
-	glm::vec3 emission; // the energy emitted per unit of patch area
-	glm::vec3 unshotRadiosity;
+	glm::dvec3 totalRadiosity;
+	glm::dvec3 emission; // the energy emitted per unit of patch area
+	glm::dvec3 unshotRadiosity;
 };
 
 #endif

@@ -3,6 +3,7 @@
 
 #include "Mesh.h"
 #include "RadiosityFace.h"
+#include "Ray.h"
 #include <vector>
 
 #include <glm/vec3.hpp>
@@ -23,14 +24,22 @@ public:
 	void calculateAllFormFactors();
 	void calculateRadiosityValues();
 
+	bool doesRayHit(Ray* ray, int j, glm::vec3& hitPoint);
+	bool isVisibleFrom(int j, int i);
+
+	bool isVisibleFrom(glm::vec3 point_j, glm::vec3 point_i);
+
+	bool isParallelToFace(Ray* r, int radFaceIndex);
+
 	void setMeshFaceColors();
 
 	int getMaxUnshotRadiosityFaceIndex();
 
 
 private:
+
 	vector<RadiosityFace> sceneFaces;
-	vector<vector<float>> formFactors;
+	vector<vector<double>> formFactors;
 
 };
 #endif

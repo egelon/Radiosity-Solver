@@ -1,13 +1,9 @@
 #include "ShaderLoader.h"
 
-
-
 #include <stdio.h>
 #include <vector>
 #include <fstream>
 #include <assert.h>
-
-
 
 GLuint ShaderLoader::LoadShaders(string vertex_file, string fragment_file)
 {

@@ -13,9 +13,6 @@
 
 #include "bitmap_image.hpp"
 
-const string Mesh::vertexShaderFile = "shaders/MeshVertexShader.vert";
-const string Mesh::fragmentShaderFile = "shaders/MeshFragmentShader.frag";
-
 Mesh::Mesh()
 {
 	
@@ -153,7 +150,7 @@ void Mesh::parseMaterials(string materialsFileName)
 	fileStream.close();
 }
 
-void Mesh::parseObject(ifstream& fileStream, SceneObject& currentObject)
+void Mesh::parseObject(ifstream& fileStream, SceneObject& currentObject, int totalVertexCount)
 {
 	string line;
 	std::string prefix;
@@ -226,8 +223,8 @@ void Mesh::parseObject(ifstream& fileStream, SceneObject& currentObject)
 				for(int i=1; i<tokens.size(); i++)
 				{
 					vector<string> tmp = split(tokens[i], "//", false);
-					face.vertexIndexes[i-1] = stoi(tmp[0]) - 1;
-					face.normalIndexes[i-1] = stoi(tmp[1]) - 1;
+					face.vertexIndexes[i-1] = stoi(tmp[0]) - totalVertexCount - 1;
+					face.normalIndexes[i-1] = stoi(tmp[1]) - totalVertexCount - 1;
 				}
 			}
 			else if(regex_match(tokens[1], regex("\\d+/\\d+/\\d+"))) //we have vertex/texture/normal
@@ -239,9 +236,9 @@ void Mesh::parseObject(ifstream& fileStream, SceneObject& currentObject)
 				for(int i=1; i<tokens.size(); i++)
 				{
 					vector<string> tmp = split(tokens[i], "/", false);
-					face.vertexIndexes[i-1] = stoi(tmp[0]) - 1;
-					face.textureIndexes[i-1] = stoi(tmp[1]) - 1;
-					face.normalIndexes[i-1] = stoi(tmp[2]) - 1;
+					face.vertexIndexes[i-1] = stoi(tmp[0]) - totalVertexCount - 1;
+					face.textureIndexes[i-1] = stoi(tmp[1]) - totalVertexCount - 1;
+					face.normalIndexes[i-1] = stoi(tmp[2]) - totalVertexCount - 1;
 				}
 			}
 			else //we have vertex/texture
@@ -252,8 +249,8 @@ void Mesh::parseObject(ifstream& fileStream, SceneObject& currentObject)
 				for(int i=1; i<tokens.size(); i++)
 				{
 					vector<string> tmp = split(tokens[i], "/", false);
-					face.vertexIndexes[i-1] = stoi(tmp[0]) - 1;
-					face.textureIndexes[i-1] = stoi(tmp[1]) - 1;
+					face.vertexIndexes[i-1] = stoi(tmp[0]) - totalVertexCount - 1;
+					face.textureIndexes[i-1] = stoi(tmp[1]) - totalVertexCount - 1;
 				}
 			}
 			face.material = currentMaterial;
@@ -294,13 +291,16 @@ void Mesh::Load(string input_file)
 
 	fileStream.seekg(ios_base::beg);
 
+	int totalVertexCount = 0;
+
 	while(!fileStream.eof())
 	{
 		//found another object, end parsing
 		
 			SceneObject currentObject;
 			currentObject.obj_id = currentObjectId;
-			parseObject(fileStream, currentObject);
+			parseObject(fileStream, currentObject, totalVertexCount);
+			totalVertexCount += currentObject.obj_model.vertices.size();
 			sceneModel.push_back(currentObject);
 			currentObjectId ++;
 		
@@ -465,31 +465,82 @@ void Mesh::Subdivide()
 	}
 }
 
+vector<ModelFace*> Mesh::GetFaceIndexesFromVertexIndex(int modelIndex, int vertIndex)
+{
+	ObjectModel* currentModel = &sceneModel[modelIndex].obj_model;
+
+	vector<ModelFace*> result;
+
+	for(int i=0; i<currentModel->faces.size(); i++)
+	{
+		ModelFace* currentFace = &currentModel->faces[i];
+		for(int j=0; j<currentFace->vertexIndexes.size(); j++)
+		{
+			if(currentFace->vertexIndexes[j] == vertIndex)
+				result.push_back(currentFace);
+		}
+	}
+	return result;
+}
+
 void Mesh::cacheVerticesFacesAndColors_Radiosity()
 {
 	vertex_positions.clear();
 	face_indexes.clear();
 	vertex_colors.clear();
 
+	//for every scene object
 	for(int i=0; i<sceneModel.size(); i++)
 	{
-		//for every scene object
+
+		/*
+		//get all the vertices
+		for(int currentVertexIndex=0; currentVertexIndex<sceneModel[i].obj_model.vertices.size(); currentVertexIndex++)
+		{
+			vertex_positions.push_back(sceneModel[i].obj_model.vertices[currentVertexIndex].x);
+			vertex_positions.push_back(sceneModel[i].obj_model.vertices[currentVertexIndex].y);
+			vertex_positions.push_back(sceneModel[i].obj_model.vertices[currentVertexIndex].z);
+
+			vector<ModelFace*> incidentFaces = GetFaceIndexesFromVertexIndex(i, currentVertexIndex);
+
+			glm::vec3 currentColor;
+			float currentIntensity = 0;
+
+			int numIncidentFaces = incidentFaces.size();
+			for(int j=0; j< numIncidentFaces; j++)
+			{
+				currentIntensity += incidentFaces[j]->intensity / (float)numIncidentFaces;
+				currentColor += incidentFaces[j]->material->diffuseColor / (float)numIncidentFaces;
+			}
+
+			currentColor *= currentIntensity;
+
+			vertex_colors.push_back(currentColor.r);
+			vertex_colors.push_back(currentColor.g);
+			vertex_colors.push_back(currentColor.b);
+		}
+
+
+		*/
+
 		for(int j=0; j<sceneModel[i].obj_model.faces.size(); j++)
 		{
 			//for every face of it
 			ModelFace currentFace = sceneModel[i].obj_model.faces[j];
 
 			//FOR DEBUG
-			/*
-			float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-			float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-			float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-			glm::vec3 currentColor(color_r, color_g, color_b);
-			*/
+			
+			//float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			//float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			//float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			//glm::vec3 currentColor(color_r, color_g, color_b);
+			
 			glm::vec3 currentColor = currentFace.material->diffuseColor;
-			float intensity = currentFace.intensity;
-
-			currentColor *= intensity;
+			float currentIntensity = currentFace.intensity;
+			//currentColor *= currentIntensity;
+			vector<ModelFace*> incidentFaces;
+			int numIncidentFaces;
+			
 			if(currentFace.vertexIndexes.size() == 3) //we have triangles
 			{
 				int index_a = currentFace.vertexIndexes[0];
@@ -507,6 +558,20 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
+
+				incidentFaces = GetFaceIndexesFromVertexIndex(i, (vertex_positions.size() / 3) - 1);
+
+				numIncidentFaces = incidentFaces.size();
+				for(int j=0; j< numIncidentFaces; j++)
+				{
+					currentIntensity += incidentFaces[j]->intensity / (float)numIncidentFaces;
+					currentColor += incidentFaces[j]->material->diffuseColor / (float)numIncidentFaces;
+				}
+
+				currentColor *= currentIntensity;
+
+
+
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
 				vertex_colors.push_back(currentColor.b);
@@ -518,6 +583,17 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
+				incidentFaces = GetFaceIndexesFromVertexIndex(i, (vertex_positions.size() / 3) - 1);
+
+				numIncidentFaces = incidentFaces.size();
+				for(int j=0; j< numIncidentFaces; j++)
+				{
+					currentIntensity += incidentFaces[j]->intensity / (float)numIncidentFaces;
+					currentColor += incidentFaces[j]->material->diffuseColor / (float)numIncidentFaces;
+				}
+
+				currentColor *= currentIntensity;
+
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
 				vertex_colors.push_back(currentColor.b);
@@ -528,6 +604,17 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 				vertex_positions.push_back(vertex_c.z);
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				incidentFaces = GetFaceIndexesFromVertexIndex(i, (vertex_positions.size() / 3) - 1);
+
+				numIncidentFaces = incidentFaces.size();
+				for(int j=0; j< numIncidentFaces; j++)
+				{
+					currentIntensity += incidentFaces[j]->intensity / (float)numIncidentFaces;
+					currentColor += incidentFaces[j]->material->diffuseColor / (float)numIncidentFaces;
+				}
+
+				currentColor *= currentIntensity;
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
@@ -552,6 +639,21 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
+				incidentFaces = GetFaceIndexesFromVertexIndex(i, (vertex_positions.size() / 3) - 1);
+
+				numIncidentFaces = incidentFaces.size();
+				for(int j=0; j< numIncidentFaces; j++)
+				{
+					currentIntensity += incidentFaces[j]->intensity / (float)numIncidentFaces;
+					currentColor += incidentFaces[j]->material->diffuseColor / (float)numIncidentFaces;
+				}
+
+				currentColor *= currentIntensity;
+
+
+
+
+
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
 				vertex_colors.push_back(currentColor.b);
@@ -563,6 +665,22 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
+
+				incidentFaces = GetFaceIndexesFromVertexIndex(i, (vertex_positions.size() / 3) - 1);
+
+				numIncidentFaces = incidentFaces.size();
+				for(int j=0; j< numIncidentFaces; j++)
+				{
+					currentIntensity += incidentFaces[j]->intensity / (float)numIncidentFaces;
+					currentColor += incidentFaces[j]->material->diffuseColor / (float)numIncidentFaces;
+				}
+
+				currentColor *= currentIntensity;
+
+
+
+
+
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
 				vertex_colors.push_back(currentColor.b);
@@ -573,6 +691,21 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 				vertex_positions.push_back(vertex_d.z);
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+
+
+				incidentFaces = GetFaceIndexesFromVertexIndex(i, (vertex_positions.size() / 3) - 1);
+
+				numIncidentFaces = incidentFaces.size();
+				for(int j=0; j< numIncidentFaces; j++)
+				{
+					currentIntensity += incidentFaces[j]->intensity / (float)numIncidentFaces;
+					currentColor += incidentFaces[j]->material->diffuseColor / (float)numIncidentFaces;
+				}
+
+				currentColor *= currentIntensity;
+
+
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
@@ -587,6 +720,19 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
+				incidentFaces = GetFaceIndexesFromVertexIndex(i, (vertex_positions.size() / 3) - 1);
+
+				numIncidentFaces = incidentFaces.size();
+				for(int j=0; j< numIncidentFaces; j++)
+				{
+					currentIntensity += incidentFaces[j]->intensity / (float)numIncidentFaces;
+					currentColor += incidentFaces[j]->material->diffuseColor / (float)numIncidentFaces;
+				}
+
+				currentColor *= currentIntensity;
+
+
+
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
 				vertex_colors.push_back(currentColor.b);
@@ -598,6 +744,19 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
+				incidentFaces = GetFaceIndexesFromVertexIndex(i, (vertex_positions.size() / 3) - 1);
+
+				numIncidentFaces = incidentFaces.size();
+				for(int j=0; j< numIncidentFaces; j++)
+				{
+					currentIntensity += incidentFaces[j]->intensity / (float)numIncidentFaces;
+					currentColor += incidentFaces[j]->material->diffuseColor / (float)numIncidentFaces;
+				}
+
+				currentColor *= currentIntensity;
+
+
+
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
 				vertex_colors.push_back(currentColor.b);
@@ -608,6 +767,19 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 				vertex_positions.push_back(vertex_d.z);
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+
+				incidentFaces = GetFaceIndexesFromVertexIndex(i, (vertex_positions.size() / 3) - 1);
+
+				numIncidentFaces = incidentFaces.size();
+				for(int j=0; j< numIncidentFaces; j++)
+				{
+					currentIntensity += incidentFaces[j]->intensity / (float)numIncidentFaces;
+					currentColor += incidentFaces[j]->material->diffuseColor / (float)numIncidentFaces;
+				}
+
+				currentColor *= currentIntensity;
+
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
@@ -637,13 +809,13 @@ void Mesh::cacheVerticesFacesAndColors()
 			ModelFace currentFace = sceneModel[i].obj_model.faces[j];
 
 			//FOR DEBUG
-			/*
+			
 			float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
 			float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
 			float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
 			glm::vec3 currentColor(color_r, color_g, color_b);
-			*/
-			glm::vec3 currentColor = currentFace.material->diffuseColor;
+			
+			//glm::vec3 currentColor = currentFace.material->diffuseColor;
 
 			if(currentFace.vertexIndexes.size() == 3) //we have triangles
 			{
@@ -782,9 +954,15 @@ void Mesh::DrawWireframe()
 	
 }
 
-GLuint Mesh::LoadShaders()
+GLuint Mesh::LoadDefaultShaders()
 {
-	shaderProgramID = shaderLoader.LoadShaders(vertexShaderFile, fragmentShaderFile);
+	shaderProgramID = shaderLoader.LoadShaders("shaders/MeshVertexShader.vert", "shaders/MeshFragmentShader.frag");
+	return shaderProgramID;
+}
+
+GLuint Mesh::LoadGouraudShaders()
+{
+	shaderProgramID = shaderLoader.LoadShaders("shaders/MeshGouraudShader.vert", "shaders/MeshGouraudShader.frag");
 	return shaderProgramID;
 }
 
@@ -836,7 +1014,7 @@ void Mesh::Draw()
 	glEnableVertexAttribArray(vertexPosition_modelspaceID);
 
 	//use the vertex buffer
-	//this is the data we'll give as input to OpanGL
+	//this is the data we'll give as input to OpenGL
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
 
 	//describe the data's attributes to OpenGL

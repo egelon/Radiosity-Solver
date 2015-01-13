@@ -9,9 +9,9 @@
 class UserControls
 {
 	public:
-	UserControls();
-	UserControls(int wW, int wH, glm::vec3 pos, float hAngle, float vAngle, float initFoV, float nearClip, float farClip, float speed, float mouseSpeed);
-	void computeMatricesFromInputs(Mesh* mesh, Radiosity* radiosity);
+	UserControls(glm::vec3 pos, float hAngle, float vAngle);
+	void handleKeyboard(Mesh* mesh, Radiosity* radiosity);
+	void computeMatrices(float initFoV, float nearClip, float farClip, float speed, float mouseSpeed);
 	glm::mat4 getViewMatrix();
 	glm::mat4 getProjectionMatrix();
 
@@ -20,22 +20,11 @@ class UserControls
 	glm::mat4 ProjectionMatrix;
 
 	// Initial position : on +Z
-	glm::vec3 position;
+	glm::vec3 currentPosition;
 	// Initial horizontal angle : toward -Z
-	float horizontalAngle;
+	float currentHorizontalAngle;
 	// Initial vertical angle : none
-	float verticalAngle;
-	// Initial Field of View
-	float initialFoV;
-
-	float speed; // units / second
-	float mouseSpeed;
-
-	int windowWidth;
-	int windowHeight;
-
-	float nearClippingPlane;
-	float farClippingPlane;
+	float currentVerticalAngle;
 };
 
 #endif

@@ -17,24 +17,14 @@ using namespace glm;
 #include<vector>
 using namespace std;
 
+#include "ArgParser.h"
 #include "Mesh.h"
 #include "Radiosity.h"
 #include "UserControls.h"
 
-int main( void )
+int main( int argc, char *argv[] )
 {
-	string sceneName = "test_quads.obj";
-
-	int windowWidth = 1024;
-	int windowHeight = 768;
-	glm::vec3 cameraPosition( 0, 0, 5 );
-	float horizontalAngle = 3.14f;
-	float verticalAngle = 0.0f;
-	float initialFoV = 45.0f;
-	float nearClippingPlane = 0.1f;
-	float farClippingPlane = 100.0f;
-	float moveSpeed = 3.0f;
-	float mouseSpeed = 0.0005f;
+	ArgParser argParser(argc, argv);
 
 	// Initialise GLFW
 	if( !glfwInit() )
@@ -48,7 +38,7 @@ int main( void )
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( windowWidth, windowHeight, "Radiosity", NULL, NULL);
+	window = glfwCreateWindow( argParser.windowWidth, argParser.windowHeight, "Radiosity", NULL, NULL);
 
 	if( window == NULL )
 	{
@@ -69,10 +59,10 @@ int main( void )
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-	glfwSetCursorPos(window, windowWidth/2, windowHeight/2);
+	glfwSetCursorPos(window, argParser.windowWidth/2, argParser.windowHeight/2);
 
 	// Dark blue background
-	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+	glClearColor(argParser.bgcolor.r, argParser.bgcolor.g, argParser.bgcolor.b, 0.0f);
 
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
@@ -84,28 +74,20 @@ int main( void )
 	glEnable(GL_CULL_FACE);
 
 	UserControls userControls(
-			windowWidth,
-			windowHeight,
-			cameraPosition,
-			horizontalAngle,
-			verticalAngle,
-			initialFoV,
-			nearClippingPlane,
-			farClippingPlane,
-			moveSpeed,
-			mouseSpeed
+			argParser.cameraPosition,
+			argParser.horizontalAngle,
+			argParser.verticalAngle
 		);
 	Mesh* mesh = new Mesh();
 	Radiosity* radiosity = new Radiosity();
 
-	mesh->Load(sceneName);
+	mesh->Load(argParser.sceneName);
+
 
 	
-
-	
-
+	glShadeModel(GL_SMOOTH);
 	// Create and compile our GLSL program from the mesh's shaders
-	GLuint meshShaderProgramID = mesh->LoadShaders();
+	GLuint meshShaderProgramID = mesh->LoadDefaultShaders();
 	mesh->cacheVerticesFacesAndColors();
 	mesh->PrepareToDraw();
 
@@ -115,8 +97,8 @@ int main( void )
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-		userControls.computeMatricesFromInputs(mesh, radiosity);
+		userControls.handleKeyboard(mesh, radiosity);
+		userControls.computeMatrices(argParser.initialFoV, argParser.nearClippingPlane, argParser.farClippingPlane, argParser.moveSpeed, argParser.mouseSpeed);
 		glm::mat4 ProjectionMatrix = userControls.getProjectionMatrix();
 		glm::mat4 ViewMatrix = userControls.getViewMatrix();
 		glm::mat4 ModelMatrix = glm::mat4(1.0);

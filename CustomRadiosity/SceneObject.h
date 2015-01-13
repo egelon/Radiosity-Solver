@@ -2,8 +2,6 @@
 #define SCENEOBJECT_H
 
 #include "ObjectModel.h"
-#include <string>
-using namespace std;
 
 struct SceneObject
 {
