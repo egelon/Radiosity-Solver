@@ -667,63 +667,9 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 				vertex_colors.push_back(currentColor.g);
 				vertex_colors.push_back(currentColor.b);
 
-				//push d
-				vertex_positions.push_back(vertex_d.x);
-				vertex_positions.push_back(vertex_d.y);
-				vertex_positions.push_back(vertex_d.z);
-
-				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
 
-				currentColor = glm::vec3(0.0f, 0.0f, 0.0f);
-				currentIntensity = 0.0f;
-				incidentFaces = GetFaceIndexesFromVertexIndex(i, index_d);
 
-				numIncidentFaces = incidentFaces.size();
-				for(int j=0; j< numIncidentFaces; j++)
-				{
-					currentIntensity += incidentFaces[j]->intensity;
-					currentColor += incidentFaces[j]->material->diffuseColor;
-				}
-
-				currentIntensity /= (float)numIncidentFaces;
-				currentColor /= (float)numIncidentFaces;
-				currentColor *= currentIntensity;
-
-
-				vertex_colors.push_back(currentColor.r);
-				vertex_colors.push_back(currentColor.g);
-				vertex_colors.push_back(currentColor.b);
-
-				//==========================================================
-
-				//push b
-				vertex_positions.push_back(vertex_b.x);
-				vertex_positions.push_back(vertex_b.y);
-				vertex_positions.push_back(vertex_b.z);
-
-				face_indexes.push_back((vertex_positions.size() / 3) - 1);
-
-				currentColor = glm::vec3(0.0f, 0.0f, 0.0f);
-				currentIntensity = 0.0f;
-				incidentFaces = GetFaceIndexesFromVertexIndex(i, index_b);
-
-				numIncidentFaces = incidentFaces.size();
-				for(int j=0; j< numIncidentFaces; j++)
-				{
-					currentIntensity += incidentFaces[j]->intensity;
-					currentColor += incidentFaces[j]->material->diffuseColor;
-				}
-
-				currentIntensity /= (float)numIncidentFaces;
-				currentColor /= (float)numIncidentFaces;
-				currentColor *= currentIntensity;
-				
-
-
-				vertex_colors.push_back(currentColor.r);
-				vertex_colors.push_back(currentColor.g);
-				vertex_colors.push_back(currentColor.b);
 
 
 				//push c
@@ -755,12 +701,14 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 				vertex_colors.push_back(currentColor.b);
 
 
+
 				//push d
 				vertex_positions.push_back(vertex_d.x);
 				vertex_positions.push_back(vertex_d.y);
 				vertex_positions.push_back(vertex_d.z);
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
 
 				currentColor = glm::vec3(0.0f, 0.0f, 0.0f);
 				currentIntensity = 0.0f;
@@ -776,7 +724,7 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 				currentIntensity /= (float)numIncidentFaces;
 				currentColor /= (float)numIncidentFaces;
 				currentColor *= currentIntensity;
-				
+
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
@@ -1044,7 +992,7 @@ void Mesh::Draw()
 
 	//draw the data we gave as a triangle
 	glDrawElements(
-		GL_TRIANGLES,      // mode
+		GL_QUADS,      // mode
 		face_indexes.size(),    // count
 		GL_UNSIGNED_INT,   // type
 		(void*)0           // element array buffer offset
