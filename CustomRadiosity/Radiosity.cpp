@@ -125,18 +125,16 @@ int Radiosity::getMaxUnshotRadiosityFaceIndex()
 	*/
 
 	int index = -1;
-	glm::dvec3 maxUnshot(0.0f, 0.0f, 0.0f);
+	double maxUnshot = 0.0;
+
 	for(int i=0; i<sceneFaces.size(); i++)
 	{
-		glm::dvec3 curUnshot = sceneFaces[i].unshotRadiosity;
-		float curArea = sceneFaces[i].model->getFaceArea(sceneFaces[i].faceIndex);
+		double curUnshot = glm::length(sceneFaces[i].unshotRadiosity);
+		double curArea = sceneFaces[i].model->getFaceArea(sceneFaces[i].faceIndex);
 
 		curUnshot *= curArea;
-		if(
-				curUnshot.r >= maxUnshot.r &&
-				curUnshot.g >= maxUnshot.g &&
-				curUnshot.b >= maxUnshot.b
-			)
+
+		if(curUnshot > maxUnshot)
 		{
 			index = i;
 			maxUnshot = curUnshot;
@@ -157,7 +155,7 @@ void Radiosity::calculateRadiosityValues()
 {
 	//calculateAllFormFactors();
 
-	glm::vec3 threshold(0.5f, 0.5f, 0.5f);
+	glm::vec3 threshold(0.4f, 0.4f, 0.4f);
 	glm::vec3 error(0.0f, 0.0f, 0.0f);
 
 	for(int i=0; i<sceneFaces.size(); i++)
@@ -224,7 +222,7 @@ void Radiosity::setMeshFaceColors()
 		glm::dvec3 radValue = glm::clamp(sceneFaces[i].totalRadiosity,0.0,1.0);
 
 		glm::clamp(radValue,0.0,1.0);
-		sceneFaces[i].model->faces[sceneFaces[i].faceIndex].intensity = radValue.r;
+		sceneFaces[i].model->faces[sceneFaces[i].faceIndex].intensity = radValue;
 	}
 }
 

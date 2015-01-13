@@ -1,4 +1,4 @@
-﻿Build started 1/13/2015 2:37:28 PM.
+﻿Build started 1/13/2015 5:41:16 PM.
      1>Project "D:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\CustomRadiosity.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ID:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glm /ID:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glfw\include /ID:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glew\include /ID:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\freeglut\include /ID:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\bitmap /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D OM_STATIC_BUILD /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Mesh.cpp
@@ -13,13 +13,13 @@
      1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(223): warning C4018: '<' : signed/unsigned mismatch
      1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(236): warning C4018: '<' : signed/unsigned mismatch
      1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(249): warning C4018: '<' : signed/unsigned mismatch
-     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(326): warning C4018: '<' : signed/unsigned mismatch
-     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(478): warning C4018: '<' : signed/unsigned mismatch
-     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(481): warning C4018: '<' : signed/unsigned mismatch
-     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(497): warning C4018: '<' : signed/unsigned mismatch
-     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(499): warning C4018: '<' : signed/unsigned mismatch
-     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(803): warning C4018: '<' : signed/unsigned mismatch
-     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(806): warning C4018: '<' : signed/unsigned mismatch
+     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(341): warning C4018: '<' : signed/unsigned mismatch
+     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(567): warning C4018: '<' : signed/unsigned mismatch
+     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(570): warning C4018: '<' : signed/unsigned mismatch
+     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(610): warning C4018: '<' : signed/unsigned mismatch
+     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(612): warning C4018: '<' : signed/unsigned mismatch
+     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(778): warning C4018: '<' : signed/unsigned mismatch
+     1>d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(781): warning C4018: '<' : signed/unsigned mismatch
      1>c:\program files (x86)\microsoft visual studio 11.0\vc\include\xutility(2176): warning C4996: 'std::_Copy_impl': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct. To disable this warning, use -D_SCL_SECURE_NO_WARNINGS. See documentation on how to use Visual C++ 'Checked Iterators'
                  c:\program files (x86)\microsoft visual studio 11.0\vc\include\xutility(2157) : see declaration of 'std::_Copy_impl'
                  d:\dropbox\diploma\prj\c++\customradiosity\customradiosity\lib\bitmap\bitmap_image.hpp(97) : see reference to function template instantiation '_OutIt std::copy<unsigned char*,unsigned char*>(_InIt,_InIt,_OutIt)' being compiled
@@ -36,9 +36,10 @@
          Debug\Radiosity.obj
          Debug\ShaderLoader.obj
          Debug\UserControls.obj
+     1>LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
          CustomRadiosity.vcxproj -> D:\Dropbox\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.exe
      1>Done Building Project "D:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\CustomRadiosity.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:01.90
+Time Elapsed 00:00:02.39

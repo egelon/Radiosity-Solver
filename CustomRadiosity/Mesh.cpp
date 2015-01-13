@@ -321,6 +321,21 @@ void Mesh::ResetMesh()
 	sceneModel = startingSceneModel;
 }
 
+
+float maximum(float x, float y, float z) {
+	float max = x; /* assume x is the largest */
+
+	if (y > max) { /* if y is larger than max, assign y to max */
+		max = y;
+	} /* end if */
+
+	if (z > max) { /* if z is larger than max, assign z to max */
+		max = z;
+	} /* end if */
+
+	return max; /* max is the largest value */
+}
+
 void Mesh::Subdivide()
 {
 	for(int i=0; i<sceneModel.size(); i++)
@@ -345,6 +360,69 @@ void Mesh::Subdivide()
 				glm::vec3 vertex_a = currentObject->vertices[index_a];
 				glm::vec3 vertex_b = currentObject->vertices[index_b];
 				glm::vec3 vertex_c = currentObject->vertices[index_c];
+
+				float len_AB = glm::length(vertex_b - vertex_a);
+				float len_BC = glm::length(vertex_c - vertex_b);
+				float len_CA = glm::length(vertex_a - vertex_c);
+
+				glm::vec3 midpoint;
+
+				if (len_BC > len_AB)
+				{
+					midpoint = (vertex_b + vertex_c)/2.0f;
+
+					currentObject->vertices.push_back(midpoint);
+					int midpointIndex = currentObject->vertices.size() - 1;
+
+					currentFace->vertexIndexes[2] = midpointIndex;
+
+					ModelFace face_a;
+
+					face_a.material = currentMaterial;
+					face_a.vertexIndexes.push_back(index_a);
+					face_a.vertexIndexes.push_back(midpointIndex);
+					face_a.vertexIndexes.push_back(index_c);
+
+					currentObject->faces.push_back(face_a);
+				}
+				else if (len_CA > len_AB)
+				{
+					midpoint = (vertex_c + vertex_a)/2.0f;
+
+					currentObject->vertices.push_back(midpoint);
+					int midpointIndex = currentObject->vertices.size() - 1;
+
+					currentFace->vertexIndexes[2] = midpointIndex;
+
+					ModelFace face_a;
+
+					face_a.material = currentMaterial;
+					face_a.vertexIndexes.push_back(midpointIndex);
+					face_a.vertexIndexes.push_back(index_b);
+					face_a.vertexIndexes.push_back(index_c);
+
+					currentObject->faces.push_back(face_a);
+				}
+				else
+				{
+					midpoint = (vertex_a + vertex_b)/2.0f;
+
+					currentObject->vertices.push_back(midpoint);
+					int midpointIndex = currentObject->vertices.size() - 1;
+
+					currentFace->vertexIndexes[1] = midpointIndex;
+
+					ModelFace face_a;
+
+					face_a.material = currentMaterial;
+					face_a.vertexIndexes.push_back(midpointIndex);
+					face_a.vertexIndexes.push_back(index_b);
+					face_a.vertexIndexes.push_back(index_c);
+
+					currentObject->faces.push_back(face_a);
+				}
+
+				/*
 
 				//calculate the medicenter of the face
 				glm::vec3 centroid = currentObject->getFaceCentroid(j);
@@ -374,6 +452,7 @@ void Mesh::Subdivide()
 				face_b.vertexIndexes.push_back(centroidIndex);
 
 				currentObject->faces.push_back(face_b);
+				*/
 			}
 			else if(currentFace->vertexIndexes.size() == 4) //we got quads
 			{
@@ -487,6 +566,30 @@ vector<ModelFace*> Mesh::GetFaceIndexesFromVertexIndex(int modelIndex, int vertI
 	return result;
 }
 
+glm::vec3 getColorPerVertex(vector<ModelFace*> incidentFaces)
+{
+	glm::vec3 currentColor(0.0f, 0.0f, 0.0f);
+	glm::vec3 currentIntensity(0.0f, 0.0f, 0.0f);
+	
+	int numIncidentFaces = incidentFaces.size();
+	for(int i=0; i< numIncidentFaces; i++)
+	{
+		currentIntensity += incidentFaces[i]->intensity;
+		currentColor += incidentFaces[i]->material->diffuseColor;
+	}
+
+	currentIntensity /= (float)numIncidentFaces;
+	currentColor /= (float)numIncidentFaces;
+
+	currentColor.r *= currentIntensity.r;
+	currentColor.g *= currentIntensity.g;
+	currentColor.b *= currentIntensity.b;
+
+	glm::clamp(currentColor,0.0f,1.0f);
+
+	return currentColor;
+}
+
 void Mesh::cacheVerticesFacesAndColors_Radiosity()
 {
 	vertex_positions.clear();
@@ -502,9 +605,7 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 			ModelFace currentFace = sceneModel[i].obj_model.faces[j];
 
 			glm::vec3 currentColor(0.0f, 0.0f, 0.0f);
-			float currentIntensity = 0.0f;
-			vector<ModelFace*> incidentFaces;
-			int numIncidentFaces;
+			
 			
 			if(currentFace.vertexIndexes.size() == 3) //we have triangles
 			{
@@ -523,23 +624,8 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
-				currentColor = glm::vec3(0.0f, 0.0f, 0.0f);
-				currentIntensity = 0.0f;
-				incidentFaces = GetFaceIndexesFromVertexIndex(i, index_a);
-
-				numIncidentFaces = incidentFaces.size();
-				for(int j=0; j< numIncidentFaces; j++)
-				{
-					currentIntensity += incidentFaces[j]->intensity;
-					currentColor += incidentFaces[j]->material->diffuseColor;
-				}
-
-				currentIntensity /= (float)numIncidentFaces;
-				currentColor /= (float)numIncidentFaces;
-				currentColor *= currentIntensity;
-
-
-
+				currentColor  = getColorPerVertex(GetFaceIndexesFromVertexIndex(i, index_a));
+				
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
 				vertex_colors.push_back(currentColor.b);
@@ -551,20 +637,7 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
-				currentColor = glm::vec3(0.0f, 0.0f, 0.0f);
-				currentIntensity = 0.0f;
-				incidentFaces = GetFaceIndexesFromVertexIndex(i, index_b);
-
-				numIncidentFaces = incidentFaces.size();
-				for(int j=0; j< numIncidentFaces; j++)
-				{
-					currentIntensity += incidentFaces[j]->intensity;
-					currentColor += incidentFaces[j]->material->diffuseColor;
-				}
-
-				currentIntensity /= (float)numIncidentFaces;
-				currentColor /= (float)numIncidentFaces;
-				currentColor *= currentIntensity;
+				currentColor  = getColorPerVertex(GetFaceIndexesFromVertexIndex(i, index_b));
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
@@ -577,22 +650,7 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
-				currentColor = glm::vec3(0.0f, 0.0f, 0.0f);
-				currentIntensity = 0.0f;
-				incidentFaces = GetFaceIndexesFromVertexIndex(i, index_c);
-
-				numIncidentFaces = incidentFaces.size();
-				for(int j=0; j< numIncidentFaces; j++)
-				{
-					currentIntensity += incidentFaces[j]->intensity;
-					currentColor += incidentFaces[j]->material->diffuseColor;
-				}
-
-				currentIntensity /= (float)numIncidentFaces;
-				currentColor /= (float)numIncidentFaces;
-				currentColor *= currentIntensity;
-
-
+				currentColor  = getColorPerVertex(GetFaceIndexesFromVertexIndex(i, index_c));
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
@@ -617,24 +675,7 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
-
-				currentColor = glm::vec3(0.0f, 0.0f, 0.0f);
-				currentIntensity = 0.0f;
-				incidentFaces = GetFaceIndexesFromVertexIndex(i, index_a);
-
-				numIncidentFaces = incidentFaces.size();
-				for(int j=0; j< numIncidentFaces; j++)
-				{
-					currentIntensity += incidentFaces[j]->intensity;
-					currentColor += incidentFaces[j]->material->diffuseColor;
-				}
-
-				currentIntensity /= (float)numIncidentFaces;
-				currentColor /= (float)numIncidentFaces;
-				currentColor *= currentIntensity;
-
-
-
+				currentColor  = getColorPerVertex(GetFaceIndexesFromVertexIndex(i, index_a));
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
@@ -647,24 +688,7 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
-
-				currentColor = glm::vec3(0.0f, 0.0f, 0.0f);
-				currentIntensity = 0.0f;
-				incidentFaces = GetFaceIndexesFromVertexIndex(i, index_b);
-
-				numIncidentFaces = incidentFaces.size();
-				for(int j=0; j< numIncidentFaces; j++)
-				{
-					currentIntensity += incidentFaces[j]->intensity;
-					currentColor += incidentFaces[j]->material->diffuseColor;
-				}
-
-				currentIntensity /= (float)numIncidentFaces;
-				currentColor /= (float)numIncidentFaces;
-				currentColor *= currentIntensity;
-
-
-
+				currentColor  = getColorPerVertex(GetFaceIndexesFromVertexIndex(i, index_b));
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
@@ -677,22 +701,7 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
-
-				currentColor = glm::vec3(0.0f, 0.0f, 0.0f);
-				currentIntensity = 0.0f;
-				incidentFaces = GetFaceIndexesFromVertexIndex(i, index_d);
-
-				numIncidentFaces = incidentFaces.size();
-				for(int j=0; j< numIncidentFaces; j++)
-				{
-					currentIntensity += incidentFaces[j]->intensity;
-					currentColor += incidentFaces[j]->material->diffuseColor;
-				}
-
-				currentIntensity /= (float)numIncidentFaces;
-				currentColor /= (float)numIncidentFaces;
-				currentColor *= currentIntensity;
-
+				currentColor  = getColorPerVertex(GetFaceIndexesFromVertexIndex(i, index_d));
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
@@ -707,22 +716,7 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
-				currentColor = glm::vec3(0.0f, 0.0f, 0.0f);
-				currentIntensity = 0.0f;
-				incidentFaces = GetFaceIndexesFromVertexIndex(i, index_b);
-
-				numIncidentFaces = incidentFaces.size();
-				for(int j=0; j< numIncidentFaces; j++)
-				{
-					currentIntensity += incidentFaces[j]->intensity;
-					currentColor += incidentFaces[j]->material->diffuseColor;
-				}
-
-				currentIntensity /= (float)numIncidentFaces;
-				currentColor /= (float)numIncidentFaces;
-				currentColor *= currentIntensity;
-				
-
+				currentColor  = getColorPerVertex(GetFaceIndexesFromVertexIndex(i, index_b));
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
@@ -736,22 +730,7 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
-				currentColor = glm::vec3(0.0f, 0.0f, 0.0f);
-				currentIntensity = 0.0f;
-				incidentFaces = GetFaceIndexesFromVertexIndex(i, index_c);
-
-				numIncidentFaces = incidentFaces.size();
-				for(int j=0; j< numIncidentFaces; j++)
-				{
-					currentIntensity += incidentFaces[j]->intensity;
-					currentColor += incidentFaces[j]->material->diffuseColor;
-				}
-
-				currentIntensity /= (float)numIncidentFaces;
-				currentColor /= (float)numIncidentFaces;
-				currentColor *= currentIntensity;
-				
-
+				currentColor  = getColorPerVertex(GetFaceIndexesFromVertexIndex(i, index_c));
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);
@@ -765,21 +744,7 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity()
 
 				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 
-				currentColor = glm::vec3(0.0f, 0.0f, 0.0f);
-				currentIntensity = 0.0f;
-				incidentFaces = GetFaceIndexesFromVertexIndex(i, index_d);
-
-				numIncidentFaces = incidentFaces.size();
-				for(int j=0; j< numIncidentFaces; j++)
-				{
-					currentIntensity += incidentFaces[j]->intensity;
-					currentColor += incidentFaces[j]->material->diffuseColor;
-				}
-
-				currentIntensity /= (float)numIncidentFaces;
-				currentColor /= (float)numIncidentFaces;
-				currentColor *= currentIntensity;
-				
+				currentColor  = getColorPerVertex(GetFaceIndexesFromVertexIndex(i, index_d));
 
 				vertex_colors.push_back(currentColor.r);
 				vertex_colors.push_back(currentColor.g);

@@ -10,7 +10,7 @@ struct ModelFace
 	vector<GLuint> normalIndexes;
 	Material* material;
 
-	float intensity;
+	glm::vec3 intensity;
 };
 
 #endif
