@@ -21,6 +21,7 @@ struct ObjectModel
 	vector<glm::vec3> textureUVW;
 	vector<glm::vec3> vertexNormals;
 	vector<ModelFace> faces;
+	int vertexIndexOffset;
 
 	float getFaceArea(int faceIndex)
 	{
