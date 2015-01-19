@@ -91,6 +91,9 @@ int main( int argc, char *argv[] )
 	mesh->cacheVerticesFacesAndColors();
 	mesh->PrepareToDraw();
 
+	printf("Loading faces...\n");
+	radiosity->loadSceneFacesFromMesh(mesh);
+
 	//now we draw
 	do
 	{

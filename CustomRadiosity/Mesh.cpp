@@ -170,7 +170,12 @@ void Mesh::parseObject(ifstream& fileStream, SceneObject& currentObject, int tot
 		if (!line.compare(0, prefix.size(), prefix))
 		{
 			tokens = split(line, " ", false);
-			glm::vec3 vertex(stod(tokens[1]), stod(tokens[2]), stod(tokens[3]));
+
+			double x = stod(tokens[1]);
+			double y = stod(tokens[2]);
+			double z = stod(tokens[3]);
+
+			glm::vec3 vertex((float)x, (float)y, (float)z);
 			currentObject.obj_model.vertices.push_back(vertex);
 		}
 
@@ -241,16 +246,16 @@ void Mesh::parseObject(ifstream& fileStream, SceneObject& currentObject, int tot
 					face.normalIndexes[i-1] = stoi(tmp[2]) - totalVertexCount - 1;
 				}
 			}
-			else //we have vertex/texture
+			else //we have vertex vertex
 			{
 				face.vertexIndexes.resize(numIndexes);
-				face.textureIndexes.resize(numIndexes);
+				//face.textureIndexes.resize(numIndexes);
 
 				for(int i=1; i<tokens.size(); i++)
 				{
-					vector<string> tmp = split(tokens[i], "/", false);
-					face.vertexIndexes[i-1] = stoi(tmp[0]) - totalVertexCount - 1;
-					face.textureIndexes[i-1] = stoi(tmp[1]) - totalVertexCount - 1;
+					//vector<string> tmp = split(tokens[i], " ", false);
+					face.vertexIndexes[i-1] = stoi(tokens[i]) - totalVertexCount - 1;
+					//face.textureIndexes[i-1] = stoi(tmp[1]) - totalVertexCount - 1;
 				}
 			}
 			face.material = currentMaterial;
@@ -321,28 +326,20 @@ void Mesh::ResetMesh()
 	sceneModel = startingSceneModel;
 }
 
-
-float maximum(float x, float y, float z) {
-	float max = x; /* assume x is the largest */
-
-	if (y > max) { /* if y is larger than max, assign y to max */
-		max = y;
-	} /* end if */
-
-	if (z > max) { /* if z is larger than max, assign z to max */
-		max = z;
-	} /* end if */
-
-	return max; /* max is the largest value */
-}
-
 void Mesh::Subdivide()
 {
+	int firstObjectVertexOffset = 0;
+
 	for(int i=0; i<sceneModel.size(); i++)
 	{
 		//for every scene object
 		ObjectModel* currentObject = &sceneModel[i].obj_model;
 		int currentObjFaces = currentObject->faces.size();
+
+		if(currentObject->vertexIndexOffset > 0)
+			currentObject->vertexIndexOffset +=firstObjectVertexOffset;
+
+
 		for(int j=0; j < currentObjFaces; j++)
 		{
 			//for every face of it
@@ -372,6 +369,16 @@ void Mesh::Subdivide()
 					midpoint = (vertex_b + vertex_c)/2.0f;
 
 					currentObject->vertices.push_back(midpoint);
+
+
+					if(currentObject->vertexIndexOffset == 0)
+						firstObjectVertexOffset++;
+					else
+					{
+						currentObject->vertexIndexOffset ++;
+					}
+
+
 					int midpointIndex = currentObject->vertices.size() - 1;
 
 					currentFace->vertexIndexes[2] = midpointIndex;
@@ -390,6 +397,15 @@ void Mesh::Subdivide()
 					midpoint = (vertex_c + vertex_a)/2.0f;
 
 					currentObject->vertices.push_back(midpoint);
+					
+					if(currentObject->vertexIndexOffset == 0)
+						firstObjectVertexOffset++;
+					else
+					{
+						currentObject->vertexIndexOffset ++;
+					}
+
+
 					int midpointIndex = currentObject->vertices.size() - 1;
 
 					currentFace->vertexIndexes[2] = midpointIndex;
@@ -408,6 +424,16 @@ void Mesh::Subdivide()
 					midpoint = (vertex_a + vertex_b)/2.0f;
 
 					currentObject->vertices.push_back(midpoint);
+					
+
+					if(currentObject->vertexIndexOffset == 0)
+						firstObjectVertexOffset++;
+					else
+					{
+						currentObject->vertexIndexOffset ++;
+					}
+
+
 					int midpointIndex = currentObject->vertices.size() - 1;
 
 					currentFace->vertexIndexes[1] = midpointIndex;
@@ -496,15 +522,58 @@ void Mesh::Subdivide()
 				
 
 				currentObject->vertices.push_back(centroid);
+				
+				if(currentObject->vertexIndexOffset == 0)
+					firstObjectVertexOffset++;
+				else
+				{
+					currentObject->vertexIndexOffset ++;
+				}
+
 				int centroidIndex = currentObject->vertices.size() - 1;
 
 				currentObject->vertices.push_back(vertex_ab);
+
+				if(currentObject->vertexIndexOffset == 0)
+					firstObjectVertexOffset++;
+				else
+				{
+					currentObject->vertexIndexOffset ++;
+				}
+
 				int abIndex = currentObject->vertices.size() - 1;
 				currentObject->vertices.push_back(vertex_bc);
+
+				if(currentObject->vertexIndexOffset == 0)
+					firstObjectVertexOffset++;
+				else
+				{
+					currentObject->vertexIndexOffset ++;
+				}
+
+
 				int bcIndex = currentObject->vertices.size() - 1;
 				currentObject->vertices.push_back(vertex_cd);
+
+				if(currentObject->vertexIndexOffset == 0)
+					firstObjectVertexOffset++;
+				else
+				{
+					currentObject->vertexIndexOffset ++;
+				}
+
+
 				int cdIndex = currentObject->vertices.size() - 1;
 				currentObject->vertices.push_back(vertex_da);
+
+				if(currentObject->vertexIndexOffset == 0)
+					firstObjectVertexOffset++;
+				else
+				{
+					currentObject->vertexIndexOffset ++;
+				}
+
+
 				int daIndex = currentObject->vertices.size() - 1;
 
 
@@ -568,6 +637,7 @@ vector<ModelFace*> Mesh::GetFaceIndexesFromVertexIndex(int modelIndex, int vertI
 
 glm::vec3 getColorPerVertex(vector<ModelFace*> incidentFaces)
 {
+	
 	glm::vec3 currentColor(0.0f, 0.0f, 0.0f);
 	glm::vec3 currentIntensity(0.0f, 0.0f, 0.0f);
 	
@@ -588,6 +658,145 @@ glm::vec3 getColorPerVertex(vector<ModelFace*> incidentFaces)
 	glm::clamp(currentColor,0.0f,1.0f);
 
 	return currentColor;
+	
+	/*
+	glm::vec3 currentColor(0.0f, 0.0f, 0.0f);
+	glm::vec3 currentNormal(0.0f, 0.0f, 0.0f);
+	float total = 0.0f;
+	
+	for(int i=0; i< incidentFaces.size(); i++)
+	{
+		currentNormal = incidentFaces[i]->
+
+		currentIntensity += incidentFaces[i]->intensity;
+		currentColor += incidentFaces[i]->material->diffuseColor;
+	}
+	*/
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+vector<int> Mesh::GetFaceIndexesFromVertexIndex_Radiosity(int modelIndex, int vertIndex)
+{
+	ObjectModel* currentModel = &sceneModel[modelIndex].obj_model;
+
+	vector<int> result;
+
+	for(int i=0; i<currentModel->faces.size(); i++)
+	{
+		ModelFace* currentFace = &currentModel->faces[i];
+		for(int j=0; j<currentFace->vertexIndexes.size(); j++)
+		{
+			if(currentFace->vertexIndexes[j] == vertIndex)
+				result.push_back(i);
+		}
+	}
+	return result;
+}
+
+glm::vec3 Mesh::interpolatedColorForCurrentFace(int modelIndex, int currentFace, int currentVertex)
+{
+	vector<int> incidentFaces = GetFaceIndexesFromVertexIndex_Radiosity(modelIndex, currentVertex);
+	float total = 0.0f;
+	glm::vec3 color(0.0f, 0.0f, 0.0f);
+	ObjectModel* currentModel = &sceneModel[modelIndex].obj_model;
+	glm::vec3 normal = currentModel->getFaceNormal(currentFace);
+
+	for(int i=0; i<incidentFaces.size(); i++)
+	{
+		glm::vec3 normal2 = currentModel->getFaceNormal(incidentFaces[i]);
+		if(glm::dot(normal, normal2) < 0.9f)
+			continue;
+		total += currentModel->getFaceArea(incidentFaces[i]);
+		color += currentModel->getFaceArea(incidentFaces[i]) * currentModel->faces[incidentFaces[i]].intensity * currentModel->faces[incidentFaces[i]].material->diffuseColor;
+	}
+	if(total > 0.0f)
+		color /= total;
+	return color;
+}
+
+
+*/
+
+
+
+
+
+
+
+
+void Mesh::cacheVerticesFacesAndColors_Radiosity_II()
+{
+	vertex_positions.clear();
+	face_indexes.clear();
+	vertex_colors.clear();
+
+	//for every scene object
+	for(int i=0; i<sceneModel.size(); i++)
+	{
+		for(int j=0; j<sceneModel[i].obj_model.vertices.size(); j++)
+		{
+			vertex_positions.push_back(sceneModel[i].obj_model.vertices[j].x);
+			vertex_positions.push_back(sceneModel[i].obj_model.vertices[j].y);
+			vertex_positions.push_back(sceneModel[i].obj_model.vertices[j].z);
+
+			glm::vec3 currentColor  = getColorPerVertex(GetFaceIndexesFromVertexIndex(i, j));
+			
+			vertex_colors.push_back(currentColor.r);
+			vertex_colors.push_back(currentColor.g);
+			vertex_colors.push_back(currentColor.b);
+
+		}
+	
+		for(int j=0; j<sceneModel[i].obj_model.faces.size(); j++)
+		{
+			ModelFace currentFace = sceneModel[i].obj_model.faces[j];
+
+			if(currentFace.vertexIndexes.size() == 3)
+			{
+				face_indexes.push_back(currentFace.vertexIndexes[0] + sceneModel[i].obj_model.vertexIndexOffset);
+				face_indexes.push_back(currentFace.vertexIndexes[1] + sceneModel[i].obj_model.vertexIndexOffset);
+				face_indexes.push_back(currentFace.vertexIndexes[2] + sceneModel[i].obj_model.vertexIndexOffset);
+			}
+			else if(currentFace.vertexIndexes.size() == 4)
+			{
+				face_indexes.push_back(currentFace.vertexIndexes[0] + sceneModel[i].obj_model.vertexIndexOffset);
+				face_indexes.push_back(currentFace.vertexIndexes[1] + sceneModel[i].obj_model.vertexIndexOffset);
+				face_indexes.push_back(currentFace.vertexIndexes[3] + sceneModel[i].obj_model.vertexIndexOffset);
+
+				face_indexes.push_back(currentFace.vertexIndexes[1] + sceneModel[i].obj_model.vertexIndexOffset);
+				face_indexes.push_back(currentFace.vertexIndexes[2] + sceneModel[i].obj_model.vertexIndexOffset);
+				face_indexes.push_back(currentFace.vertexIndexes[3] + sceneModel[i].obj_model.vertexIndexOffset);
+			}
+			else
+			{
+				printf("Model doesn't have triangles or quads. Can't process\n");
+				return;
+			}
+
+
+			/*
+
+			for(int k=0; k<currentFace.vertexIndexes.size(); k++)
+			{
+				face_indexes.push_back(currentFace.vertexIndexes[k] + sceneModel[i].obj_model.vertexIndexOffset);
+			}
+			*/
+		}
+	}
 }
 
 void Mesh::cacheVerticesFacesAndColors_Radiosity()
@@ -775,12 +984,17 @@ void Mesh::cacheVerticesFacesAndColors()
 
 			//FOR DEBUG
 			
-			float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-			float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-			float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-			glm::vec3 currentColor(color_r, color_g, color_b);
+			//float color_r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			//float color_g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			//float color_b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+			//glm::vec3 currentColor(color_r, color_g, color_b);
 			
-			//glm::vec3 currentColor = currentFace.material->diffuseColor;
+			glm::vec3 currentColor = currentFace.material->diffuseColor * currentFace.intensity;
+
+
+			//getColorPerVertex
+
+
 
 			if(currentFace.vertexIndexes.size() == 3) //we have triangles
 			{

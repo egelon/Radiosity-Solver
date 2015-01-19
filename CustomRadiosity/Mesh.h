@@ -49,6 +49,7 @@ public:
 
 	void cacheVerticesFacesAndColors();
 	void cacheVerticesFacesAndColors_Radiosity();
+	void cacheVerticesFacesAndColors_Radiosity_II();
 
 
 private:

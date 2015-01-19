@@ -33,6 +33,10 @@ void UserControls::handleKeyboard(Mesh* mesh, Radiosity* radiosity)
 			mesh->Subdivide();
 			mesh->cacheVerticesFacesAndColors();
 			mesh->PrepareToDraw();
+
+			printf("Loading faces...\n");
+			radiosity->loadSceneFacesFromMesh(mesh);
+			radiosity->PrepareUnshotRadiosityValues();
 		}
 	}
 
@@ -45,6 +49,10 @@ void UserControls::handleKeyboard(Mesh* mesh, Radiosity* radiosity)
 			mesh->ResetMesh();
 			mesh->cacheVerticesFacesAndColors();
 			mesh->PrepareToDraw();
+
+			printf("Loading faces...\n");
+			radiosity->loadSceneFacesFromMesh(mesh);
+			radiosity->PrepareUnshotRadiosityValues();
 		}
 	}
 
@@ -54,13 +62,13 @@ void UserControls::handleKeyboard(Mesh* mesh, Radiosity* radiosity)
 		if (glfwGetKey( window, GLFW_KEY_I ) == GLFW_RELEASE)
 		{
 			printf("Radiosity iteration. Please wait, this could take a while...\n");
-			printf("Loading faces...\n");
-			radiosity->loadSceneFacesFromMesh(mesh);
+			
 			printf("Calculating radiosity values...\n");
 			radiosity->calculateRadiosityValues();
 			printf("Preparing to re-draw scene...\n");
 			radiosity->setMeshFaceColors();
-			mesh->cacheVerticesFacesAndColors_Radiosity();
+			//mesh->cacheVerticesFacesAndColors_Radiosity();
+			mesh->cacheVerticesFacesAndColors();
 			mesh->PrepareToDraw();
 		}
 	}

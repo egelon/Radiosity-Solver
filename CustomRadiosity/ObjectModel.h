@@ -153,14 +153,17 @@ struct ObjectModel
 			glm::vec3 vertex_b = vertices[index_b];
 			glm::vec3 vertex_c = vertices[index_c];
 
+			double r1;
+			double r2;
+
 			for(int i=0; i<count; i++)
 			{
-				float r1 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-				float r2 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+				r1 = static_cast <double> (rand()) / (static_cast <double> (RAND_MAX/1.0));
+				r2 = static_cast <double> (rand()) / (static_cast <double> (RAND_MAX/1.0));
 				glm::vec3 point(
-						(1.0f - glm::sqrt(r1)) * vertex_a +
-						(glm::sqrt(r1) * (1.0f - r2)) * vertex_b +
-						(r2 * glm::sqrt(r1)) * vertex_c
+						(float)(1.0 - glm::sqrt(r1)) * vertex_a +
+						(float)(glm::sqrt(r1) * (1.0 - r2)) * vertex_b +
+						(float)(r2 * glm::sqrt(r1)) * vertex_c
 					);
 				result.push_back(point);
 			}
@@ -178,24 +181,27 @@ struct ObjectModel
 			glm::vec3 vertex_c = vertices[index_c];
 			glm::vec3 vertex_d = vertices[index_d];
 
+			double r1;
+			double r2;
+
 			for(int i=0; i<count/2; i++)
 			{
-				float r1 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-				float r2 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+				r1 = static_cast <double> (rand()) / (static_cast <double> (RAND_MAX/1.0));
+				r2 = static_cast <double> (rand()) / (static_cast <double> (RAND_MAX/1.0));
 				glm::vec3 point1(
-					(1.0f - glm::sqrt(r1)) * vertex_a +
-					(glm::sqrt(r1) * (1.0f - r2)) * vertex_b +
-					(r2 * glm::sqrt(r1)) * vertex_d
+					(float)(1.0 - glm::sqrt(r1)) * vertex_a +
+					(float)(glm::sqrt(r1) * (1.0 - r2)) * vertex_b +
+					(float)(r2 * glm::sqrt(r1)) * vertex_d
 					);
 				result.push_back(point1);
 
-				r1 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-				r2 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/1.0));
+				r1 = static_cast <double> (rand()) / (static_cast <double> (RAND_MAX/1.0));
+				r2 = static_cast <double> (rand()) / (static_cast <double> (RAND_MAX/1.0));
 
 				glm::vec3 point2(
-					(1.0f - glm::sqrt(r1)) * vertex_b +
-					(glm::sqrt(r1) * (1.0f - r2)) * vertex_c +
-					(r2 * glm::sqrt(r1)) * vertex_d
+					(float)(1.0 - glm::sqrt(r1)) * vertex_b +
+					(float)(glm::sqrt(r1) * (1.0 - r2)) * vertex_c +
+					(float)(r2 * glm::sqrt(r1)) * vertex_d
 					);
 				result.push_back(point2);
 			}

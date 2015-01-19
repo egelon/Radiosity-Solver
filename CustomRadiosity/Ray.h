@@ -42,8 +42,12 @@ public:
 
 	void setStart(glm::vec3 s) {start = s;}
 	glm::vec3 getStart() {return start;}
-	void setDirection(glm::vec3 dir) {direction = glm::normalize(dir);}
-	glm::vec3 getDirection() {return glm::normalize(direction);}
+	void setDirection(glm::vec3 dir) {direction = dir;}
+	glm::vec3 getDirection() 
+	{
+		return glm::normalize(direction);
+		//return direction;
+	}
 private:
 	glm::vec3 start;
 	glm::vec3 direction;

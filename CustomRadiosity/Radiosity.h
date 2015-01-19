@@ -21,7 +21,7 @@ public:
 	void initEmittedEnergies();
 	void initRadiosityValues();
 	void calculateFormFactorsForFace(int i, int samplePoints);
-	void calculateAllFormFactors();
+	void PrepareUnshotRadiosityValues();
 	void calculateRadiosityValues();
 
 	bool doesRayHit(Ray* ray, int j, glm::vec3& hitPoint);
