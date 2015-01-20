@@ -80,6 +80,13 @@ private:
 	GLuint colorBufferID;
 	GLuint elementBufferID;
 	GLuint shaderProgramID;
+
+
+
+	glm::vec3 interpolatedColorForVertex(int modelIndex, int currentVertex);
+	vector<int> GetFaceIndexesFromVertexIndex_Radiosity(int modelIndex, int vertIndex);
+
+
 };
 
 #endif

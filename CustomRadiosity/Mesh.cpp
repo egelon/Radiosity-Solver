@@ -686,7 +686,6 @@ glm::vec3 getColorPerVertex(vector<ModelFace*> incidentFaces)
 
 
 
-/*
 
 
 vector<int> Mesh::GetFaceIndexesFromVertexIndex_Radiosity(int modelIndex, int vertIndex)
@@ -707,13 +706,13 @@ vector<int> Mesh::GetFaceIndexesFromVertexIndex_Radiosity(int modelIndex, int ve
 	return result;
 }
 
-glm::vec3 Mesh::interpolatedColorForCurrentFace(int modelIndex, int currentFace, int currentVertex)
+glm::vec3 Mesh::interpolatedColorForVertex(int modelIndex, int currentVertex)
 {
 	vector<int> incidentFaces = GetFaceIndexesFromVertexIndex_Radiosity(modelIndex, currentVertex);
 	float total = 0.0f;
 	glm::vec3 color(0.0f, 0.0f, 0.0f);
 	ObjectModel* currentModel = &sceneModel[modelIndex].obj_model;
-	glm::vec3 normal = currentModel->getFaceNormal(currentFace);
+	glm::vec3 normal = currentModel->getFaceNormal(incidentFaces[0]);
 
 	for(int i=0; i<incidentFaces.size(); i++)
 	{
@@ -729,7 +728,7 @@ glm::vec3 Mesh::interpolatedColorForCurrentFace(int modelIndex, int currentFace,
 }
 
 
-*/
+
 
 
 
@@ -744,6 +743,8 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity_II()
 	face_indexes.clear();
 	vertex_colors.clear();
 
+	glm::vec3 currentColor;
+
 	//for every scene object
 	for(int i=0; i<sceneModel.size(); i++)
 	{
@@ -752,15 +753,12 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity_II()
 			vertex_positions.push_back(sceneModel[i].obj_model.vertices[j].x);
 			vertex_positions.push_back(sceneModel[i].obj_model.vertices[j].y);
 			vertex_positions.push_back(sceneModel[i].obj_model.vertices[j].z);
-
-			glm::vec3 currentColor  = getColorPerVertex(GetFaceIndexesFromVertexIndex(i, j));
-			
-			vertex_colors.push_back(currentColor.r);
-			vertex_colors.push_back(currentColor.g);
-			vertex_colors.push_back(currentColor.b);
-
 		}
+	}
+
 	
+	for(int i=0; i<sceneModel.size(); i++)
+	{
 		for(int j=0; j<sceneModel[i].obj_model.faces.size(); j++)
 		{
 			ModelFace currentFace = sceneModel[i].obj_model.faces[j];
@@ -776,7 +774,7 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity_II()
 				face_indexes.push_back(currentFace.vertexIndexes[0] + sceneModel[i].obj_model.vertexIndexOffset);
 				face_indexes.push_back(currentFace.vertexIndexes[1] + sceneModel[i].obj_model.vertexIndexOffset);
 				face_indexes.push_back(currentFace.vertexIndexes[3] + sceneModel[i].obj_model.vertexIndexOffset);
-
+				
 				face_indexes.push_back(currentFace.vertexIndexes[1] + sceneModel[i].obj_model.vertexIndexOffset);
 				face_indexes.push_back(currentFace.vertexIndexes[2] + sceneModel[i].obj_model.vertexIndexOffset);
 				face_indexes.push_back(currentFace.vertexIndexes[3] + sceneModel[i].obj_model.vertexIndexOffset);
@@ -786,17 +784,25 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity_II()
 				printf("Model doesn't have triangles or quads. Can't process\n");
 				return;
 			}
-
-
-			/*
-
-			for(int k=0; k<currentFace.vertexIndexes.size(); k++)
-			{
-				face_indexes.push_back(currentFace.vertexIndexes[k] + sceneModel[i].obj_model.vertexIndexOffset);
-			}
-			*/
 		}
 	}
+
+	
+	for(int i=0; i<sceneModel.size(); i++)
+	{
+		for(int j=0; j<sceneModel[i].obj_model.vertices.size(); j++)
+		{
+				currentColor  = interpolatedColorForVertex(i, j);
+
+				vertex_colors.push_back(currentColor.r);
+				vertex_colors.push_back(currentColor.g);
+				vertex_colors.push_back(currentColor.b);
+
+
+		}
+	}
+
+
 }
 
 void Mesh::cacheVerticesFacesAndColors_Radiosity()

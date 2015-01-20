@@ -1,11 +1,11 @@
 #include "Radiosity.h"
 #include <algorithm>
 
-#define INITIAL_LIGHT_EMITTER_INTENSITY		10.0f
-#define INITIAL_AMBIENT_INTENSITY			glm::vec3(0.01f, 0.01f, 0.01f)
+#define INITIAL_LIGHT_EMITTER_INTENSITY		5.0f
+#define INITIAL_AMBIENT_INTENSITY			glm::vec3(0.03f, 0.03f, 0.03f)
 
-#define RADIOSITY_SOLUTION_THRESHOLD		glm::vec3(0.3f, 0.3f, 0.3f)
-#define FORM_FACTOR_SAMPLES					4
+#define RADIOSITY_SOLUTION_THRESHOLD		glm::vec3(0.25f, 0.25f, 0.25f)
+#define FORM_FACTOR_SAMPLES					10
 
 void Radiosity::loadSceneFacesFromMesh(Mesh* mesh)
 {

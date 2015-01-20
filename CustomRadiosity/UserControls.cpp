@@ -68,6 +68,7 @@ void UserControls::handleKeyboard(Mesh* mesh, Radiosity* radiosity)
 			printf("Preparing to re-draw scene...\n");
 			radiosity->setMeshFaceColors();
 			//mesh->cacheVerticesFacesAndColors_Radiosity();
+			//mesh->cacheVerticesFacesAndColors_Radiosity_II();
 			mesh->cacheVerticesFacesAndColors();
 			mesh->PrepareToDraw();
 		}

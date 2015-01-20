@@ -1,4 +1,4 @@
-﻿Build started 1/19/2015 6:28:40 PM.
+﻿Build started 1/19/2015 9:23:08 PM.
      1>Project "E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\CustomRadiosity.vcxproj" on node 2 (Build target(s)).
      1>InitializeBuildStatus:
          Creating "Debug\CustomRadiosity.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -27,4 +27,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.42
+Time Elapsed 00:00:01.38
