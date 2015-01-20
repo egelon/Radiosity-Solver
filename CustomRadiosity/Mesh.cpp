@@ -706,15 +706,17 @@ vector<int> Mesh::GetFaceIndexesFromVertexIndex_Radiosity(int modelIndex, int ve
 	return result;
 }
 
-glm::vec3 Mesh::interpolatedColorForVertex(int modelIndex, int currentVertex)
+glm::vec3 Mesh::interpolatedColorForVertex(int modelIndex, int currentFaceIndex, int currentVertex)
 {
 	vector<int> incidentFaces = GetFaceIndexesFromVertexIndex_Radiosity(modelIndex, currentVertex);
+	int numIncidentFaces = incidentFaces.size();
 	float total = 0.0f;
 	glm::vec3 color(0.0f, 0.0f, 0.0f);
 	ObjectModel* currentModel = &sceneModel[modelIndex].obj_model;
-	glm::vec3 normal = currentModel->getFaceNormal(incidentFaces[0]);
 
-	for(int i=0; i<incidentFaces.size(); i++)
+	glm::vec3 normal = currentModel->getFaceNormal(currentFaceIndex);
+
+	for(int i=0; i<numIncidentFaces; i++)
 	{
 		glm::vec3 normal2 = currentModel->getFaceNormal(incidentFaces[i]);
 		if(glm::dot(normal, normal2) < 0.9f)
@@ -743,41 +745,154 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity_II()
 	face_indexes.clear();
 	vertex_colors.clear();
 
-	glm::vec3 currentColor;
-
-	//for every scene object
-	for(int i=0; i<sceneModel.size(); i++)
-	{
-		for(int j=0; j<sceneModel[i].obj_model.vertices.size(); j++)
-		{
-			vertex_positions.push_back(sceneModel[i].obj_model.vertices[j].x);
-			vertex_positions.push_back(sceneModel[i].obj_model.vertices[j].y);
-			vertex_positions.push_back(sceneModel[i].obj_model.vertices[j].z);
-		}
-	}
-
-	
 	for(int i=0; i<sceneModel.size(); i++)
 	{
 		for(int j=0; j<sceneModel[i].obj_model.faces.size(); j++)
 		{
 			ModelFace currentFace = sceneModel[i].obj_model.faces[j];
 
+			glm::vec3 color_a;
+			glm::vec3 color_b;
+			glm::vec3 color_c;
+			glm::vec3 color_d;
+
 			if(currentFace.vertexIndexes.size() == 3)
 			{
-				face_indexes.push_back(currentFace.vertexIndexes[0] + sceneModel[i].obj_model.vertexIndexOffset);
-				face_indexes.push_back(currentFace.vertexIndexes[1] + sceneModel[i].obj_model.vertexIndexOffset);
-				face_indexes.push_back(currentFace.vertexIndexes[2] + sceneModel[i].obj_model.vertexIndexOffset);
+				int index_a = currentFace.vertexIndexes[0];
+				int index_b = currentFace.vertexIndexes[1];
+				int index_c = currentFace.vertexIndexes[2];
+
+				glm::vec3 a = sceneModel[i].obj_model.vertices[index_a];
+				glm::vec3 b = sceneModel[i].obj_model.vertices[index_b];
+				glm::vec3 c = sceneModel[i].obj_model.vertices[index_c];
+
+				color_a = interpolatedColorForVertex(i, j, index_a);
+				color_b = interpolatedColorForVertex(i, j, index_b);
+				color_c = interpolatedColorForVertex(i, j, index_c);
+
+
+				//----------------------------------------------------
+				vertex_colors.push_back(color_a.r);
+				vertex_colors.push_back(color_a.g);
+				vertex_colors.push_back(color_a.b);
+
+				vertex_positions.push_back(a.x);
+				vertex_positions.push_back(a.y);
+				vertex_positions.push_back(a.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				//----------------------------------------------------
+				vertex_colors.push_back(color_b.r);
+				vertex_colors.push_back(color_b.g);
+				vertex_colors.push_back(color_b.b);
+
+				vertex_positions.push_back(b.x);
+				vertex_positions.push_back(b.y);
+				vertex_positions.push_back(b.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				//-----------------------------------------------------
+				vertex_colors.push_back(color_c.r);
+				vertex_colors.push_back(color_c.g);
+				vertex_colors.push_back(color_c.b);
+
+				vertex_positions.push_back(c.x);
+				vertex_positions.push_back(c.y);
+				vertex_positions.push_back(c.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
 			}
 			else if(currentFace.vertexIndexes.size() == 4)
 			{
-				face_indexes.push_back(currentFace.vertexIndexes[0] + sceneModel[i].obj_model.vertexIndexOffset);
-				face_indexes.push_back(currentFace.vertexIndexes[1] + sceneModel[i].obj_model.vertexIndexOffset);
-				face_indexes.push_back(currentFace.vertexIndexes[3] + sceneModel[i].obj_model.vertexIndexOffset);
-				
-				face_indexes.push_back(currentFace.vertexIndexes[1] + sceneModel[i].obj_model.vertexIndexOffset);
-				face_indexes.push_back(currentFace.vertexIndexes[2] + sceneModel[i].obj_model.vertexIndexOffset);
-				face_indexes.push_back(currentFace.vertexIndexes[3] + sceneModel[i].obj_model.vertexIndexOffset);
+				int index_a = currentFace.vertexIndexes[0];
+				int index_b = currentFace.vertexIndexes[1];
+				int index_c = currentFace.vertexIndexes[2];
+				int index_d = currentFace.vertexIndexes[3];
+
+				glm::vec3 a = sceneModel[i].obj_model.vertices[index_a];
+				glm::vec3 b = sceneModel[i].obj_model.vertices[index_b];
+				glm::vec3 c = sceneModel[i].obj_model.vertices[index_c];
+				glm::vec3 d = sceneModel[i].obj_model.vertices[index_d];
+
+				color_a = interpolatedColorForVertex(i, j, index_a);
+				color_b = interpolatedColorForVertex(i, j, index_b);
+				color_c = interpolatedColorForVertex(i, j, index_c);
+				color_d = interpolatedColorForVertex(i, j, index_d);
+
+
+				//----------------------------------------------------
+				vertex_colors.push_back(color_a.r);
+				vertex_colors.push_back(color_a.g);
+				vertex_colors.push_back(color_a.b);
+
+				vertex_positions.push_back(a.x);
+				vertex_positions.push_back(a.y);
+				vertex_positions.push_back(a.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				//----------------------------------------------------
+				vertex_colors.push_back(color_b.r);
+				vertex_colors.push_back(color_b.g);
+				vertex_colors.push_back(color_b.b);
+
+				vertex_positions.push_back(b.x);
+				vertex_positions.push_back(b.y);
+				vertex_positions.push_back(b.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				//-----------------------------------------------------
+				vertex_colors.push_back(color_d.r);
+				vertex_colors.push_back(color_d.g);
+				vertex_colors.push_back(color_d.b);
+
+				vertex_positions.push_back(d.x);
+				vertex_positions.push_back(d.y);
+				vertex_positions.push_back(d.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+
+
+
+				//================================================================
+
+				//----------------------------------------------------
+				vertex_colors.push_back(color_b.r);
+				vertex_colors.push_back(color_b.g);
+				vertex_colors.push_back(color_b.b);
+
+				vertex_positions.push_back(b.x);
+				vertex_positions.push_back(b.y);
+				vertex_positions.push_back(b.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				//----------------------------------------------------
+				vertex_colors.push_back(color_c.r);
+				vertex_colors.push_back(color_c.g);
+				vertex_colors.push_back(color_c.b);
+
+				vertex_positions.push_back(c.x);
+				vertex_positions.push_back(c.y);
+				vertex_positions.push_back(c.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
+
+				//-----------------------------------------------------
+				vertex_colors.push_back(color_d.r);
+				vertex_colors.push_back(color_d.g);
+				vertex_colors.push_back(color_d.b);
+
+				vertex_positions.push_back(d.x);
+				vertex_positions.push_back(d.y);
+				vertex_positions.push_back(d.z);
+
+				face_indexes.push_back((vertex_positions.size() / 3) - 1);
 			}
 			else
 			{
@@ -786,23 +901,6 @@ void Mesh::cacheVerticesFacesAndColors_Radiosity_II()
 			}
 		}
 	}
-
-	
-	for(int i=0; i<sceneModel.size(); i++)
-	{
-		for(int j=0; j<sceneModel[i].obj_model.vertices.size(); j++)
-		{
-				currentColor  = interpolatedColorForVertex(i, j);
-
-				vertex_colors.push_back(currentColor.r);
-				vertex_colors.push_back(currentColor.g);
-				vertex_colors.push_back(currentColor.b);
-
-
-		}
-	}
-
-
 }
 
 void Mesh::cacheVerticesFacesAndColors_Radiosity()

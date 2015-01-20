@@ -5,7 +5,7 @@
 #define INITIAL_AMBIENT_INTENSITY			glm::vec3(0.03f, 0.03f, 0.03f)
 
 #define RADIOSITY_SOLUTION_THRESHOLD		glm::vec3(0.25f, 0.25f, 0.25f)
-#define FORM_FACTOR_SAMPLES					10
+#define FORM_FACTOR_SAMPLES					15
 
 void Radiosity::loadSceneFacesFromMesh(Mesh* mesh)
 {

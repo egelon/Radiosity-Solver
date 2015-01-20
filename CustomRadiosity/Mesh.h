@@ -83,7 +83,7 @@ private:
 
 
 
-	glm::vec3 interpolatedColorForVertex(int modelIndex, int currentVertex);
+	glm::vec3 interpolatedColorForVertex(int modelIndex, int currentFaceIndex, int currentVertex);
 	vector<int> GetFaceIndexesFromVertexIndex_Radiosity(int modelIndex, int vertIndex);
 
 
