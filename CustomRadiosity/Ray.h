@@ -46,7 +46,10 @@ public:
 	glm::vec3 getDirection() 
 	{
 		return glm::normalize(direction);
-		//return direction;
+	}
+	glm::vec3 getDirectionNotNormalised() 
+	{
+		return direction;
 	}
 private:
 	glm::vec3 start;

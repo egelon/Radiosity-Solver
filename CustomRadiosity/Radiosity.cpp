@@ -1,11 +1,11 @@
 #include "Radiosity.h"
-#include <algorithm>
+#include <glm/gtx/intersect.hpp>
 
-#define INITIAL_LIGHT_EMITTER_INTENSITY		3.0f
+#define INITIAL_LIGHT_EMITTER_INTENSITY		5.0f
 #define INITIAL_AMBIENT_INTENSITY			glm::vec3(0.03f, 0.03f, 0.03f)
 
 #define RADIOSITY_SOLUTION_THRESHOLD		glm::vec3(0.25f, 0.25f, 0.25f)
-#define FORM_FACTOR_SAMPLES					15
+#define FORM_FACTOR_SAMPLES					10
 
 void Radiosity::loadSceneFacesFromMesh(Mesh* mesh)
 {
@@ -197,7 +197,7 @@ bool Radiosity::isParallelToFace(Ray* r, int i)
 {
 	glm::vec3 n = sceneFaces[i].model->getFaceNormal(sceneFaces[i].faceIndex);
 	float dotProduct = abs(glm::dot(n, r->getDirection()));
-	if(dotProduct <= 0.0001f)
+	if(dotProduct <= 0.001f)
 		return true;
 	return false;
 }
@@ -217,31 +217,70 @@ bool rayHit_LessThan(RayHit r1, RayHit r2)
 
 bool Radiosity::isVisibleFrom(int i, int j)
 {
+	/*
+	glm::vec3 n_i = sceneFaces[i].model->getFaceNormal(sceneFaces[i].faceIndex);
+	glm::vec3 n_j = sceneFaces[j].model->getFaceNormal(sceneFaces[j].faceIndex);
+
+	
+	//check if the normal vectors are the same - then the faces are paralel
+	if(n_i == n_j)
+	{
+		return false;
+	}
+	*/
 	vector<RayHit> rayHits;
 
 	//get both centroids
 	glm::vec3 centroid_i = sceneFaces[i].model->getFaceCentroid(sceneFaces[i].faceIndex);
 	glm::vec3 centroid_j = sceneFaces[j].model->getFaceCentroid(sceneFaces[j].faceIndex);
 
-	glm::vec3 n_i = sceneFaces[i].model->getFaceNormal(sceneFaces[i].faceIndex);
-	glm::vec3 n_j = sceneFaces[j].model->getFaceNormal(sceneFaces[j].faceIndex);
-
 	//now make a ray
-	Ray ray(centroid_i, centroid_j);
-
-	if(n_i == n_j)
-		return false;
+	Ray ray(centroid_i, centroid_j - centroid_i);
 
 	for(int k=0; k<sceneFaces.size(); k++)
 	{
 		if(k == i)
 			continue;
 
+		/*
+		//check if the normal vectors are the same - then the faces are paralel
 		glm::vec3 n_k = sceneFaces[k].model->getFaceNormal(sceneFaces[k].faceIndex);
 		if(n_i == n_k)
+		{
+			isParallelToFace(&ray, k);
 			continue;
+		}
+		*/
+
+
+		int v0_k_index = sceneFaces[k].model->faces[sceneFaces[k].faceIndex].vertexIndexes[0];
+		int v1_k_index = sceneFaces[k].model->faces[sceneFaces[k].faceIndex].vertexIndexes[1];
+		int v2_k_index = sceneFaces[k].model->faces[sceneFaces[k].faceIndex].vertexIndexes[2];
+
+		glm::vec3 A = sceneFaces[k].model->vertices[v0_k_index];
+		glm::vec3 B = sceneFaces[k].model->vertices[v1_k_index];
+		glm::vec3 C = sceneFaces[k].model->vertices[v2_k_index];
+
+
+
+
 
 		glm::vec3 hitPoint;
+		if(glm::intersectRayTriangle(
+			centroid_i,
+			centroid_j - centroid_i,
+			A,
+			B,
+			C,
+			hitPoint
+			))
+		{
+			RayHit currentHit;
+			currentHit.distance = glm::distance(ray.getStart(), hitPoint);
+			currentHit.hitSceneFaceIndex = k;
+			rayHits.push_back(currentHit);
+		}
+		/*
 		if(doesRayHit(&ray, k, hitPoint))
 		{
 			RayHit currentHit;
@@ -249,14 +288,14 @@ bool Radiosity::isVisibleFrom(int i, int j)
 			currentHit.hitSceneFaceIndex = k;
 			rayHits.push_back(currentHit);
 		}
+		*/
 	}
-
-	//std::sort(rayHits.begin(), rayHits.end(), rayHit_LessThan);
-
 	if(rayHits.empty())
 		return false;
+
 	if(rayHits.size() == 1)
 		return true;
+
 	return false;
 }
 
@@ -265,7 +304,7 @@ bool Radiosity::isVisibleFrom(glm::vec3 point_j, glm::vec3 point_i)
 	vector<RayHit> rayHits;
 
 	//now make a ray
-	Ray ray(point_i, point_j);
+	Ray ray(point_i, point_j - point_i);
 
 	for(int k=0; k<sceneFaces.size(); k++)
 	{
@@ -282,7 +321,7 @@ bool Radiosity::isVisibleFrom(glm::vec3 point_j, glm::vec3 point_i)
 		}
 	}
 
-	std::sort(rayHits.begin(), rayHits.end(), rayHit_LessThan);
+	//std::sort(rayHits.begin(), rayHits.end(), rayHit_LessThan);
 
 	if(rayHits.empty())
 		return false;
@@ -326,6 +365,10 @@ bool Radiosity::doesRayHit(Ray* ray, int k, glm::vec3& hitPoint)
 	//plug into plane equasion, solve for t
 
 	float t = (d - glm::dot(n_k, ray->getStart())) / glm::dot(n_k, ray->getDirection());
+
+	//triangle behind ray
+	if(t<0.0f)
+		return false;
 
 	//calculate the intersection point between the ray and the plane where k lies
 	glm::vec3 Q = ray->getStart() + (t * ray->getDirection());

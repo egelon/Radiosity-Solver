@@ -148,7 +148,7 @@ public:
 private:
 	void DefaultValues()
 	{
-		sceneName = "quad_box_noSphere.obj";
+		sceneName = "quad_box.obj";
 		windowWidth = 1024;
 		windowHeight = 768;
 		cameraPosition = glm::vec3( 0, 0, 5 );
