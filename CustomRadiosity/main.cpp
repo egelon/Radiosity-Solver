@@ -1,6 +1,7 @@
 // Include standard headers
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctime>
 
 // Include GLEW
 #include <GL/glew.h>
@@ -76,7 +77,8 @@ int main( int argc, char *argv[] )
 	UserControls userControls(
 			argParser.cameraPosition,
 			argParser.horizontalAngle,
-			argParser.verticalAngle
+			argParser.verticalAngle, 
+			argParser.interpolate
 		);
 	Mesh* mesh = new Mesh();
 	Radiosity* radiosity = new Radiosity();
@@ -94,13 +96,27 @@ int main( int argc, char *argv[] )
 	printf("Loading faces...\n");
 	radiosity->loadSceneFacesFromMesh(mesh);
 
+	//if we have number of subdivisions
+	if(argParser.numSubdivisions > 0)
+	{
+		printf("Subdivision\n");
+		for(int i=0; i<argParser.numSubdivisions; i++)
+		{
+			printf("LOD: %d\n", i);
+			mesh->Subdivide();
+			//mesh->cacheVerticesFacesAndColors();
+			//mesh->PrepareToDraw();
+			radiosity->loadSceneFacesFromMesh(mesh);
+			radiosity->PrepareUnshotRadiosityValues();
+		}
+	}
+
 	//now we draw
 	do
 	{
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		userControls.handleKeyboard(mesh, radiosity);
 		userControls.computeMatrices(argParser.initialFoV, argParser.nearClippingPlane, argParser.farClippingPlane, argParser.moveSpeed, argParser.mouseSpeed);
 		glm::mat4 ProjectionMatrix = userControls.getProjectionMatrix();
 		glm::mat4 ViewMatrix = userControls.getViewMatrix();
@@ -108,19 +124,65 @@ int main( int argc, char *argv[] )
 		glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 		mesh->SetMVP(MVP);
 
-		//draw the mesh
-		mesh->Draw();
-
-		// Swap buffers
-		glfwSwapBuffers(window);
-
-		glfwPollEvents();
-
-		GLenum err;
-		while ((err = glGetError()) != GL_NO_ERROR)
+		//if we have set number of iterations, then do them, output the image and exit immediatelly
+		if(argParser.numIterations > 0)
 		{
-			printf("OpenGL error: %d\n",  err);
+			printf("Calculating radiosity solution for scene. This could take a while...\n");
+			for(int i=0; i< argParser.numIterations; i++)
+			{
+				printf("Radiosity iteration: %d\n", i);
+				radiosity->calculateRadiosityValues();
+				radiosity->setMeshFaceColors();
+			}
+			printf("Caching vertex positions and colors...\n");
+			if(argParser.interpolate)
+				mesh->cacheVerticesFacesAndColors_Radiosity_II();
+			else
+				mesh->cacheVerticesFacesAndColors();
+
+			mesh->PrepareToDraw();
+
+			//draw the mesh
+			mesh->Draw();
+
+			// Swap buffers
+			glfwSwapBuffers(window);
+			
+			GLenum err;
+			while ((err = glGetError()) != GL_NO_ERROR)
+			{
+				printf("OpenGL error: %d\n",  err);
+			}
+
+			printf("Preparing to save file\n");
+
+			time_t now = time(0);
+			string bmpName(to_string(now).append(".bmp"));
+			int windowWidth;
+			int windowHeight;
+			glfwGetWindowSize (window, &windowWidth, &windowHeight);
+			mesh->OutputToBitmap(bmpName, windowWidth, windowHeight);
+			printf("Screenshot saved: %s\n", bmpName);
+
+			//close the window
+			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
+		
+			userControls.handleKeyboard(mesh, radiosity);
+			//draw the mesh
+			mesh->Draw();
+
+			// Swap buffers
+			glfwSwapBuffers(window);
+
+			glfwPollEvents();
+
+			GLenum err;
+			while ((err = glGetError()) != GL_NO_ERROR)
+			{
+				printf("OpenGL error: %d\n",  err);
+			}
+		
 	} // Check if the ESC key was pressed or the window was closed
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
 

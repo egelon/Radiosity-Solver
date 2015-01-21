@@ -9,7 +9,7 @@
 class UserControls
 {
 	public:
-	UserControls(glm::vec3 pos, float hAngle, float vAngle);
+	UserControls(glm::vec3 pos, float hAngle, float vAngle, bool interpolate);
 	void handleKeyboard(Mesh* mesh, Radiosity* radiosity);
 	void computeMatrices(float initFoV, float nearClip, float farClip, float speed, float mouseSpeed);
 	glm::mat4 getViewMatrix();
@@ -25,6 +25,7 @@ class UserControls
 	float currentHorizontalAngle;
 	// Initial vertical angle : none
 	float currentVerticalAngle;
+	bool interpolateColors;
 };
 
 #endif

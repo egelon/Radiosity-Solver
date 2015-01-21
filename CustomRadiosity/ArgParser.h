@@ -118,6 +118,12 @@ public:
 				assert (i < argc);
 				numIterations = atoi(argv[i]);
 			}
+			else if (!strcmp(argv[i],"-s")) 
+			{
+				i++;
+				assert (i < argc);
+				numSubdivisions = atoi(argv[i]);
+			}
 			else if (!strcmp(argv[i],"-interpolate")) 
 			{
 				interpolate = true;
@@ -145,6 +151,7 @@ public:
 	glm::vec3 bgcolor;
 	bool interpolate;
 	int numIterations;
+	int numSubdivisions;
 private:
 	void DefaultValues()
 	{
@@ -160,8 +167,9 @@ private:
 		moveSpeed = 3.0f;
 		mouseSpeed = 0.0005f;
 		bgcolor = glm::vec3(0.0f, 0.0f, 0.4f);
-		interpolate = false;
-		numIterations = 1;
+		interpolate = true;
+		numIterations = 4;
+		numSubdivisions = 1;
 	}
 };
 

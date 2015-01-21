@@ -1,11 +1,11 @@
 #include "Radiosity.h"
 #include <glm/gtx/intersect.hpp>
 
-#define INITIAL_LIGHT_EMITTER_INTENSITY		5.0f
-#define INITIAL_AMBIENT_INTENSITY			glm::vec3(0.03f, 0.03f, 0.03f)
+#define INITIAL_LIGHT_EMITTER_INTENSITY		4.0f
+#define INITIAL_AMBIENT_INTENSITY			glm::vec3(0.00f, 0.00f, 0.00f)
 
 #define RADIOSITY_SOLUTION_THRESHOLD		glm::vec3(0.25f, 0.25f, 0.25f)
-#define FORM_FACTOR_SAMPLES					10
+#define FORM_FACTOR_SAMPLES					7
 
 void Radiosity::loadSceneFacesFromMesh(Mesh* mesh)
 {
@@ -66,6 +66,7 @@ int Radiosity::getMaxUnshotRadiosityFaceIndex()
 
 void Radiosity::calculateFormFactorsForFace(int i, int samplePointsCount)
 {	
+	printf("Calculating form factors for face %d with %d sample points per form factor\n", i, samplePointsCount);
 	glm::vec3 normal_i = sceneFaces[i].model->getFaceNormal(sceneFaces[i].faceIndex);
 	//for every other face
 	for(int j=0; j<sceneFaces.size(); j++)
@@ -87,11 +88,12 @@ void Radiosity::calculateFormFactorsForFace(int i, int samplePointsCount)
 		int numSamplePoints = samplePoints_i.size();
 		for(int k=0; k<numSamplePoints; k++)
 		{
-			if( isVisibleFrom(i, j) )
+			//if( isVisibleFrom(samplePoints_i[k], samplePoints_j[k]) )
+			if( isVisibleFrom(i, j) && isVisibleFrom(samplePoints_i[k], samplePoints_j[k]))
 			{
 				glm::vec3 r_ij = glm::normalize(samplePoints_j[k] - samplePoints_i[k]);
 				//glm::vec3 r_ji = glm::normalize(samplePoints_i[k] - samplePoints_j[k]);
-
+				
 				float r_squared = glm::dot((samplePoints_i[k] - samplePoints_j[k]) , (samplePoints_i[k] - samplePoints_j[k]));
 				
 				double cos_angle_i = glm::dot(r_ij, normal_i);
@@ -143,9 +145,6 @@ void Radiosity::calculateRadiosityValues()
 			glm::dvec3 p_j = (glm::dvec3)sceneFaces[j].model->faces[sceneFaces[j].faceIndex].material->diffuseColor;
 
 			glm::dvec3 delta_rad = sceneFaces[i].unshotRadiosity * formFactors[i][j] * p_j;
-
-
-
 
 			sceneFaces[j].unshotRadiosity = sceneFaces[j].unshotRadiosity + delta_rad;
 			sceneFaces[j].totalRadiosity  = sceneFaces[j].totalRadiosity + delta_rad;
@@ -217,17 +216,7 @@ bool rayHit_LessThan(RayHit r1, RayHit r2)
 
 bool Radiosity::isVisibleFrom(int i, int j)
 {
-	/*
-	glm::vec3 n_i = sceneFaces[i].model->getFaceNormal(sceneFaces[i].faceIndex);
-	glm::vec3 n_j = sceneFaces[j].model->getFaceNormal(sceneFaces[j].faceIndex);
 
-	
-	//check if the normal vectors are the same - then the faces are paralel
-	if(n_i == n_j)
-	{
-		return false;
-	}
-	*/
 	vector<RayHit> rayHits;
 
 	//get both centroids
@@ -242,17 +231,6 @@ bool Radiosity::isVisibleFrom(int i, int j)
 		if(k == i)
 			continue;
 
-		/*
-		//check if the normal vectors are the same - then the faces are paralel
-		glm::vec3 n_k = sceneFaces[k].model->getFaceNormal(sceneFaces[k].faceIndex);
-		if(n_i == n_k)
-		{
-			isParallelToFace(&ray, k);
-			continue;
-		}
-		*/
-
-
 		int v0_k_index = sceneFaces[k].model->faces[sceneFaces[k].faceIndex].vertexIndexes[0];
 		int v1_k_index = sceneFaces[k].model->faces[sceneFaces[k].faceIndex].vertexIndexes[1];
 		int v2_k_index = sceneFaces[k].model->faces[sceneFaces[k].faceIndex].vertexIndexes[2];
@@ -261,19 +239,8 @@ bool Radiosity::isVisibleFrom(int i, int j)
 		glm::vec3 B = sceneFaces[k].model->vertices[v1_k_index];
 		glm::vec3 C = sceneFaces[k].model->vertices[v2_k_index];
 
-
-
-
-
 		glm::vec3 hitPoint;
-		if(glm::intersectRayTriangle(
-			centroid_i,
-			centroid_j - centroid_i,
-			A,
-			B,
-			C,
-			hitPoint
-			))
+		if(glm::intersectRayTriangle(centroid_i, centroid_j - centroid_i, A, B, C, hitPoint))
 		{
 			RayHit currentHit;
 			currentHit.distance = glm::distance(ray.getStart(), hitPoint);
@@ -308,6 +275,23 @@ bool Radiosity::isVisibleFrom(glm::vec3 point_j, glm::vec3 point_i)
 
 	for(int k=0; k<sceneFaces.size(); k++)
 	{
+		int v0_k_index = sceneFaces[k].model->faces[sceneFaces[k].faceIndex].vertexIndexes[0];
+		int v1_k_index = sceneFaces[k].model->faces[sceneFaces[k].faceIndex].vertexIndexes[1];
+		int v2_k_index = sceneFaces[k].model->faces[sceneFaces[k].faceIndex].vertexIndexes[2];
+
+		glm::vec3 A = sceneFaces[k].model->vertices[v0_k_index];
+		glm::vec3 B = sceneFaces[k].model->vertices[v1_k_index];
+		glm::vec3 C = sceneFaces[k].model->vertices[v2_k_index];
+
+		glm::vec3 hitPoint;
+		if(glm::intersectRayTriangle(point_i, point_j - point_i, A, B, C, hitPoint))
+		{
+			RayHit currentHit;
+			currentHit.distance = glm::distance(ray.getStart(), hitPoint);
+			currentHit.hitSceneFaceIndex = k;
+			rayHits.push_back(currentHit);
+		}
+		/*
 		glm::vec3 hitPoint;
 		if(doesRayHit(&ray, k, hitPoint))
 		{
@@ -319,6 +303,7 @@ bool Radiosity::isVisibleFrom(glm::vec3 point_j, glm::vec3 point_i)
 			currentHit.hitSceneFaceIndex = k;
 			rayHits.push_back(currentHit);
 		}
+		*/
 	}
 
 	//std::sort(rayHits.begin(), rayHits.end(), rayHit_LessThan);
@@ -326,10 +311,9 @@ bool Radiosity::isVisibleFrom(glm::vec3 point_j, glm::vec3 point_i)
 	if(rayHits.empty())
 		return false;
 
-	float pointsDistance = glm::distance(point_i, point_j);
+	if(rayHits.size() == 1)
+		return true;
 
-	//if(pointsDistance == rayHits[1].distance)
-	//	return true;
 	return false;
 }
 

@@ -5,11 +5,12 @@
 
 extern GLFWwindow* window;
 
-UserControls::UserControls(glm::vec3 pos, float hAngle, float vAngle) 
+UserControls::UserControls(glm::vec3 pos, float hAngle, float vAngle, bool interpolate) 
 {
 	currentPosition = pos;
 	currentHorizontalAngle = hAngle;
 	currentVerticalAngle = vAngle;
+	interpolateColors = interpolate;
 }
 
 glm::mat4 UserControls::getViewMatrix()
@@ -67,9 +68,10 @@ void UserControls::handleKeyboard(Mesh* mesh, Radiosity* radiosity)
 			radiosity->calculateRadiosityValues();
 			printf("Preparing to re-draw scene...\n");
 			radiosity->setMeshFaceColors();
-			//mesh->cacheVerticesFacesAndColors_Radiosity();
-			mesh->cacheVerticesFacesAndColors_Radiosity_II();
-			//mesh->cacheVerticesFacesAndColors();
+			if(interpolateColors)
+				mesh->cacheVerticesFacesAndColors_Radiosity_II();
+			else
+				mesh->cacheVerticesFacesAndColors();
 			mesh->PrepareToDraw();
 		}
 	}
