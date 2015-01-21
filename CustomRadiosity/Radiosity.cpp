@@ -1,7 +1,7 @@
 #include "Radiosity.h"
 #include <algorithm>
 
-#define INITIAL_LIGHT_EMITTER_INTENSITY		5.0f
+#define INITIAL_LIGHT_EMITTER_INTENSITY		3.0f
 #define INITIAL_AMBIENT_INTENSITY			glm::vec3(0.03f, 0.03f, 0.03f)
 
 #define RADIOSITY_SOLUTION_THRESHOLD		glm::vec3(0.25f, 0.25f, 0.25f)
@@ -87,7 +87,7 @@ void Radiosity::calculateFormFactorsForFace(int i, int samplePointsCount)
 		int numSamplePoints = samplePoints_i.size();
 		for(int k=0; k<numSamplePoints; k++)
 		{
-			if( isVisibleFrom(samplePoints_j[k], samplePoints_i[k]) )
+			if( isVisibleFrom(i, j) )
 			{
 				glm::vec3 r_ij = glm::normalize(samplePoints_j[k] - samplePoints_i[k]);
 				//glm::vec3 r_ji = glm::normalize(samplePoints_i[k] - samplePoints_j[k]);
@@ -196,43 +196,16 @@ void Radiosity::setMeshFaceColors()
 bool Radiosity::isParallelToFace(Ray* r, int i)
 {
 	glm::vec3 n = sceneFaces[i].model->getFaceNormal(sceneFaces[i].faceIndex);
-	float dotProduct = glm::dot(n, r->getDirection());
-	if(abs(dotProduct) <= 0.0001f)
+	float dotProduct = abs(glm::dot(n, r->getDirection()));
+	if(dotProduct <= 0.0001f)
 		return true;
 	return false;
-
-
-
-
-
-	//ObjectModel* curModel = sceneFaces[i].model;
-	//int v0_index = curModel->faces[sceneFaces[i].faceIndex].vertexIndexes[0];
-	//glm::vec3 v0 = curModel->vertices[v0_index];
-	//
-	//glm::vec3 n = curModel->getFaceNormal(sceneFaces[i].faceIndex);
-
-	//if(n == glm::vec3(0.0f, 0.0f, 0.0f)) //triangle is degenerate
-	//	return false;
-
-	//glm::vec3 w0 = r.getStart() - v0;
-	//float a = - glm::dot(n, w0);
-	//float b = glm::dot(n, r.getDirection());
-
-	//if(glm::abs(b) < 0.000001) //ray is paralel to triangle plane
-	//{
-	//	if(a == 0) //ray lies in triangle plane
-	//		return true;
-	//	else       //ray disjoint from plane
-	//		return false;
-	//}
-	//return false;
 }
 
 struct RayHit
 {
 	float distance;
-	int hitSceneFaceIndex;
-		
+	int hitSceneFaceIndex;	
 };
 
 bool rayHit_LessThan(RayHit r1, RayHit r2)
@@ -242,7 +215,7 @@ bool rayHit_LessThan(RayHit r1, RayHit r2)
 	return false;
 }
 
-bool Radiosity::isVisibleFrom(int j, int i)
+bool Radiosity::isVisibleFrom(int i, int j)
 {
 	vector<RayHit> rayHits;
 
@@ -250,12 +223,22 @@ bool Radiosity::isVisibleFrom(int j, int i)
 	glm::vec3 centroid_i = sceneFaces[i].model->getFaceCentroid(sceneFaces[i].faceIndex);
 	glm::vec3 centroid_j = sceneFaces[j].model->getFaceCentroid(sceneFaces[j].faceIndex);
 
+	glm::vec3 n_i = sceneFaces[i].model->getFaceNormal(sceneFaces[i].faceIndex);
+	glm::vec3 n_j = sceneFaces[j].model->getFaceNormal(sceneFaces[j].faceIndex);
+
 	//now make a ray
 	Ray ray(centroid_i, centroid_j);
+
+	if(n_i == n_j)
+		return false;
 
 	for(int k=0; k<sceneFaces.size(); k++)
 	{
 		if(k == i)
+			continue;
+
+		glm::vec3 n_k = sceneFaces[k].model->getFaceNormal(sceneFaces[k].faceIndex);
+		if(n_i == n_k)
 			continue;
 
 		glm::vec3 hitPoint;
@@ -268,11 +251,11 @@ bool Radiosity::isVisibleFrom(int j, int i)
 		}
 	}
 
-	std::sort(rayHits.begin(), rayHits.end(), rayHit_LessThan);
+	//std::sort(rayHits.begin(), rayHits.end(), rayHit_LessThan);
 
 	if(rayHits.empty())
 		return false;
-	if(rayHits[1].hitSceneFaceIndex == j)
+	if(rayHits.size() == 1)
 		return true;
 	return false;
 }
@@ -316,8 +299,8 @@ bool Radiosity::doesRayHit(Ray* ray, int k, glm::vec3& hitPoint)
 	//check if ray is parallel to face
 	glm::vec3 n_k = sceneFaces[k].model->getFaceNormal(sceneFaces[k].faceIndex);
 
-	if(isParallelToFace(ray, k))
-		return false;
+	//if(isParallelToFace(ray, k))
+	//	return false;
 
 	//get all vertices of k
 	int v0_k_index = sceneFaces[k].model->faces[sceneFaces[k].faceIndex].vertexIndexes[0];

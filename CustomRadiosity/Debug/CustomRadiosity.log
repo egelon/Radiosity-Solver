@@ -1,4 +1,4 @@
-﻿Build started 1/20/2015 8:10:31 PM.
+﻿Build started 1/21/2015 4:09:51 PM.
      1>Project "E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\CustomRadiosity.vcxproj" on node 2 (Build target(s)).
      1>InitializeBuildStatus:
          Creating "Debug\CustomRadiosity.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -11,8 +11,8 @@
      1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(112): warning C4018: '<' : signed/unsigned mismatch
      1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(141): warning C4018: '<' : signed/unsigned mismatch
      1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(187): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(256): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(287): warning C4018: '<' : signed/unsigned mismatch
+     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(235): warning C4018: '<' : signed/unsigned mismatch
+     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(270): warning C4018: '<' : signed/unsigned mismatch
        Link:
          C:\Program Files (x86)\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\Dropbox\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.exe" /INCREMENTAL /NOLOGO /LIBPATH:E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\freeglut\lib\x86\Debug /LIBPATH:"E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glfw\lib-msvc110" /LIBPATH:E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glew\lib\Release\Win32 opengl32.lib glu32.lib glew32.lib glfw3.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\Dropbox\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\Dropbox\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.lib" /MACHINE:X86 Debug\main.obj
          Debug\Mesh.obj
@@ -27,4 +27,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:02.07
+Time Elapsed 00:00:01.49

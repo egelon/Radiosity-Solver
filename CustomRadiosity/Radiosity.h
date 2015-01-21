@@ -25,7 +25,7 @@ public:
 	void calculateRadiosityValues();
 
 	bool doesRayHit(Ray* ray, int j, glm::vec3& hitPoint);
-	bool isVisibleFrom(int j, int i);
+	bool isVisibleFrom(int i, int j);
 
 	bool isVisibleFrom(glm::vec3 point_j, glm::vec3 point_i);
 
