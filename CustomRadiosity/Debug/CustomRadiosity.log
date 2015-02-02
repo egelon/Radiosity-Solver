@@ -1,44 +1,25 @@
-﻿Build started 1/21/2015 11:23:07 PM.
-     1>Project "E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\CustomRadiosity.vcxproj" on node 2 (Build target(s)).
-     1>InitializeBuildStatus:
-         Creating "Debug\CustomRadiosity.unsuccessfulbuild" because "AlwaysCreate" was specified.
-       ClCompile:
-         C:\Program Files (x86)\VC\bin\CL.exe /c /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glm /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glfw\include /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glew\include /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\freeglut\include /IE:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\bitmap /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D OM_STATIC_BUILD /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Radiosity.cpp main.cpp
+﻿Build started 1/22/2015 12:02:22 PM.
+     1>Project "C:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\CustomRadiosity.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /IC:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glm /IC:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glfw\include /IC:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glew\include /IC:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\freeglut\include /IC:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\bitmap /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D OM_STATIC_BUILD /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Radiosity.cpp
          Radiosity.cpp
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(15): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(51): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(72): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(114): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(143): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(186): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(229): warning C4018: '<' : signed/unsigned mismatch
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(276): warning C4018: '<' : signed/unsigned mismatch
-         Generating Code...
-         Compiling...
-         main.cpp
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\argparser.h(61): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\argparser.h(65): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\argparser.h(69): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\argparser.h(77): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\argparser.h(83): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\argparser.h(89): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\argparser.h(95): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\argparser.h(101): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\argparser.h(107): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>e:\dropbox\diploma\prj\c++\customradiosity\customradiosity\argparser.h(113): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-         Generating Code...
+     1>c:\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(15): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(51): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(72): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(114): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(143): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(186): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(229): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\diploma\prj\c++\customradiosity\customradiosity\radiosity.cpp(276): warning C4018: '<' : signed/unsigned mismatch
        Link:
-         C:\Program Files (x86)\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\Dropbox\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.exe" /INCREMENTAL /NOLOGO /LIBPATH:E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\freeglut\lib\x86\Debug /LIBPATH:"E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glfw\lib-msvc110" /LIBPATH:E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glew\lib\Release\Win32 opengl32.lib glu32.lib glew32.lib glfw3.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\Dropbox\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\Dropbox\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.lib" /MACHINE:X86 Debug\main.obj
+         C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\freeglut\lib\x86\Debug /LIBPATH:"C:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glfw\lib-msvc110" /LIBPATH:C:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glew\lib\Release\Win32 opengl32.lib glu32.lib glew32.lib glfw3.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.lib" /MACHINE:X86 Debug\main.obj
          Debug\Mesh.obj
          Debug\Radiosity.obj
          Debug\ShaderLoader.obj
          Debug\UserControls.obj
-         CustomRadiosity.vcxproj -> E:\Dropbox\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.exe
-       FinalizeBuildStatus:
-         Deleting file "Debug\CustomRadiosity.unsuccessfulbuild".
-         Touching "Debug\CustomRadiosity.lastbuildstate".
-     1>Done Building Project "E:\Dropbox\diploma\prj\C++\CustomRadiosity\CustomRadiosity\CustomRadiosity.vcxproj" (Build target(s)).
+         CustomRadiosity.vcxproj -> C:\diploma\prj\C++\CustomRadiosity\Debug\CustomRadiosity.exe
+     1>Done Building Project "C:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\CustomRadiosity.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:02.47
+Time Elapsed 00:00:02.73

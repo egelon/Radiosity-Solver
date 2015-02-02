@@ -155,7 +155,7 @@ public:
 private:
 	void DefaultValues()
 	{
-		sceneName = "quad_box.obj";
+		sceneName = "untitled_quads.obj"; //"quad_box.obj";
 		windowWidth = 1024;
 		windowHeight = 768;
 		cameraPosition = glm::vec3( 0, 0, 5 );
@@ -168,8 +168,8 @@ private:
 		mouseSpeed = 0.0005f;
 		bgcolor = glm::vec3(0.0f, 0.0f, 0.4f);
 		interpolate = true;
-		numIterations = 4;
-		numSubdivisions = 1;
+		numIterations = 0;
+		numSubdivisions = 0;
 	}
 };
 

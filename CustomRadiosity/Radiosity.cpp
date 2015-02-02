@@ -1,11 +1,11 @@
 #include "Radiosity.h"
 #include <glm/gtx/intersect.hpp>
 
-#define INITIAL_LIGHT_EMITTER_INTENSITY		4.0f
+#define INITIAL_LIGHT_EMITTER_INTENSITY		5.0f
 #define INITIAL_AMBIENT_INTENSITY			glm::vec3(0.00f, 0.00f, 0.00f)
 
 #define RADIOSITY_SOLUTION_THRESHOLD		glm::vec3(0.25f, 0.25f, 0.25f)
-#define FORM_FACTOR_SAMPLES					7
+#define FORM_FACTOR_SAMPLES					10
 
 void Radiosity::loadSceneFacesFromMesh(Mesh* mesh)
 {

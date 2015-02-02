@@ -1,0 +1,1 @@
+CustomRadiosity.exe -file %1

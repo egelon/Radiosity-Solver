@@ -1,0 +1,17 @@
+﻿Build started 1/22/2015 12:52:00 PM.
+     1>Project "C:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\CustomRadiosity.vcxproj" on node 2 (Build target(s)).
+     1>Link:
+         C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\diploma\prj\C++\CustomRadiosity\Release\CustomRadiosity.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:C:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\freeglut\lib\x86\Debug /LIBPATH:"C:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glfw\lib-msvc110" /LIBPATH:C:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\\lib\glew\lib\Release\Win32 opengl32.lib glu32.lib glew32.lib glfw3.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\diploma\prj\C++\CustomRadiosity\Release\CustomRadiosity.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\diploma\prj\C++\CustomRadiosity\Release\CustomRadiosity.lib" /MACHINE:X86 /SAFESEH Release\main.obj
+         Release\Mesh.obj
+         Release\Radiosity.obj
+         Release\ShaderLoader.obj
+         Release\UserControls.obj
+         Generating code
+     1>c:\diploma\prj\c++\customradiosity\customradiosity\mesh.cpp(57): warning C4715: 'Mesh::getMaterialPtrByName' : not all control paths return a value
+         Finished generating code
+         CustomRadiosity.vcxproj -> C:\diploma\prj\C++\CustomRadiosity\Release\CustomRadiosity.exe
+     1>Done Building Project "C:\diploma\prj\C++\CustomRadiosity\CustomRadiosity\CustomRadiosity.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:05.30
